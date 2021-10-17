@@ -1,5 +1,4 @@
 import yaml
-import logging
 from gate_api import ApiClient, Configuration, Order, SpotApi
 
 
