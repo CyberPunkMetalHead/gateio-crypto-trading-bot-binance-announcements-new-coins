@@ -13,4 +13,3 @@
     ENABLE_TSL: True
     TSL: 4
     TTP: 2
-  SEND_NOTIFICATIONS: True
