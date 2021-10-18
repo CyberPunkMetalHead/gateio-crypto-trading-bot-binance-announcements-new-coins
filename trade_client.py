@@ -34,7 +34,7 @@ def place_order(base,quote, amount, side, last_price):
     'DOT', 'USDT', 50, 'buy', 400
     """
     try:
-        order = Order(amount=str(amount), price=last_price, side=side, currency_pair=f'{base}_{quote}')
+        order = Order(amount=str(float(amount)/float(last_price)), price=last_price, side=side, currency_pair=f'{base}_{quote}')
         order = spot_api.create_order(order)
     except Exception as e:
         print(e)
