@@ -15,7 +15,7 @@ import os.path
 # loads local configuration
 config = load_config('config.yml')
 
-# load necesarry files
+# load necessary files
 if os.path.isfile('sold.json'):
     sold_coins = load_order('sold.json')
 else:
@@ -30,6 +30,11 @@ if os.path.isfile('new_listing.json'):
     announcement_coin = load_order('new_listing.json')
 else:
     announcement_coin = False
+
+# Keep the supported currencies loaded in RAM so no time is wasted fetching
+# currencies.json from disk when an announcement is made
+global supported_currencies
+supported_currencies = get_all_currencies(single=True)
 
 
 def main():
@@ -139,10 +144,12 @@ def main():
         else:
             announcement_coin = False
 
+        global supported_currencies
         if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins:
             print(f'New annoucement detected: {announcement_coin}')
-            if os.path.isfile('currencies.json'):
-                supported_currencies = json.load(open('currencies.json',))
+            # if os.path.isfile('currencies.json'):
+                # supported_currencies = json.load(open('currencies.json',))
+            if supported_currencies is not False:
                 if announcement_coin in supported_currencies:
                     price = get_last_price(announcement_coin, pairing)
                     try:
