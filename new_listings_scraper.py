@@ -1,6 +1,7 @@
 import requests
 import os.path, json
 import time
+import re
 
 from store_order import *
 from load_config import *
@@ -19,10 +20,7 @@ def get_last_coin():
     for item in exclusions:
         if item in latest_announcement:
             return None
-    enum = [item for item in enumerate(latest_announcement)]
-
-    #Identify symbols in a string by using this janky, yet functional line
-    uppers = ''.join(item[1] for item in enum if item[1].isupper() and (enum[enum.index(item)+1][1].isupper() or enum[enum.index(item)+1][1]==' ' or enum[enum.index(item)+1][1]==')') )
+    uppers = re.match(r".*\s([A-Z]{2,}).*", latest_announcement).group(1)
     return uppers
 
 
