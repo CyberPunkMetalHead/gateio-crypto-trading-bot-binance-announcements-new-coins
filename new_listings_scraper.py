@@ -1,6 +1,7 @@
 import requests
 import os.path, json
 import time
+import re
 
 from store_order import *
 from load_config import *
@@ -14,15 +15,25 @@ def get_last_coin():
     latest_announcement = latest_announcement.json()
     latest_announcement = latest_announcement['data']['articles'][0]['title']
 
-    # Binance makes several annoucements, irrevelant ones will be ignored
-    exclusions = ['Futures', 'Margin', 'adds', 'Adds']
-    for item in exclusions:
-        if item in latest_announcement:
-            return None
-    enum = [item for item in enumerate(latest_announcement)]
+    found_coin = re.findall('\(([^)]+)', latest_announcement)
 
-    #Identify symbols in a string by using this janky, yet functional line
-    uppers = ''.join(item[1] for item in enum if item[1].isupper() and (enum[enum.index(item)+1][1].isupper() or enum[enum.index(item)+1][1]==' ' or enum[enum.index(item)+1][1]==')') )
+    uppers = ""
+
+    if len(found_coin) == 1:
+        uppers = found_coin[0]
+    if len(found_coin) != 1:
+        uppers = ""
+
+    # # Binance makes several annoucements, irrevelant ones will be ignored
+    # exclusions = ['Futures', 'Margin', 'adds', 'Adds']
+    # for item in exclusions:
+    #     if item in latest_announcement:
+    #         return None
+    # enum = [item for item in enumerate(latest_announcement)]
+    #
+    # #Identify symbols in a string by using this janky, yet functional line
+    # uppers = ''.join(item[1] for item in enum if item[1].isupper() and (enum[enum.index(item)+1][1].isupper() or enum[enum.index(item)+1][1]==' ' or enum[enum.index(item)+1][1]==')') )
+
     return uppers
 
 
