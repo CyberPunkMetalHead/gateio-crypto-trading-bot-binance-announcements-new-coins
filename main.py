@@ -151,8 +151,6 @@ def main():
                 print(f'New annoucement detected: {announcement_coin}')
                 if os.path.isfile('currencies.json'):
                     supported_currencies = json.load(open('currencies.json',))
-                    print(supported_currencies)
-                    print("Coin is " + announcement_coin)
                     if announcement_coin in supported_currencies:
                         price = get_last_price(announcement_coin, pairing)
                         try:
