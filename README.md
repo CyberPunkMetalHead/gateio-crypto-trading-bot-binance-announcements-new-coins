@@ -19,3 +19,5 @@ It comes with a live and test mode so naturally, use at your own risk.
 See the video linked below for an explanation and rationale behind the bot.**
 
 [![binance new coin listings bot](https://img.youtube.com/vi/mIa9eQDhubs/0.jpg)](https://youtu.be/SsSgD0v16Kg)
+
+Want to talk trading bots? Join the discord [https://discord.gg/Ga56KXUUNn](https://discord.gg/Ga56KXUUNn)
