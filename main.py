@@ -179,8 +179,7 @@ def main():
 
                     store_order('order.json', order)
             else:
-                print(f"No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating. You can comment me out, I live on line 176 in main.py")
-
+                print(f"%s : No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating. You can comment me out, I live on line 176 in main.py" % datetime.today().strftime('%Y-%m-%d-%H:%M:%S'))
             time.sleep(3)
         #except Exception as e:
             #print(e)
