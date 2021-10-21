@@ -17,22 +17,22 @@ def get_last_coin():
 
     found_coin = re.findall('\(([^)]+)', latest_announcement)
 
-    uppers = ""
+    uppers = None
 
     if len(found_coin) == 1:
         uppers = found_coin[0]
     if len(found_coin) != 1:
         uppers = ""
 
-    # # Binance makes several annoucements, irrevelant ones will be ignored
-    # exclusions = ['Futures', 'Margin', 'adds', 'Adds']
-    # for item in exclusions:
-    #     if item in latest_announcement:
-    #         return None
-    # enum = [item for item in enumerate(latest_announcement)]
-    #
-    # #Identify symbols in a string by using this janky, yet functional line
-    # uppers = ''.join(item[1] for item in enum if item[1].isupper() and (enum[enum.index(item)+1][1].isupper() or enum[enum.index(item)+1][1]==' ' or enum[enum.index(item)+1][1]==')') )
+    exclusions = ['Futures', 'Margin', 'adds', 'Adds']
+    for item in exclusions:
+        if item in latest_announcement:
+            return None
+        else:
+            if len(found_coin) == 1:
+                uppers = found_coin[0]
+            if len(found_coin) != 1:
+                uppers = None
 
     return uppers
 
