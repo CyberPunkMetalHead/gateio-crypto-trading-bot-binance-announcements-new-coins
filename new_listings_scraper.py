@@ -2,6 +2,7 @@ import ast
 import os.path
 import re
 import time
+import re
 
 import requests
 from gate_api import ApiClient, SpotApi
