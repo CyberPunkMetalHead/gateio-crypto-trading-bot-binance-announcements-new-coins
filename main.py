@@ -8,29 +8,13 @@ from datetime import datetime, time
 import time
 import threading
 
-import json
-import os.path
-
 
 # loads local configuration
 config = load_config('config.yml')
-
 # load necesarry files
-if os.path.isfile('sold.json'):
-    sold_coins = load_order('sold.json')
-else:
-    sold_coins = {}
-
-if os.path.isfile('order.json'):
-    order = load_order('order.json')
-else:
-    order = {}
-
-if os.path.isfile('new_listing.json'):
-    announcement_coin = load_order('new_listing.json')
-else:
-    announcement_coin = False
-
+sold_coins = load_order('sold.json')
+order = load_order('order.json')
+announcement_coin = load_order('new_listing.json')
 
 def main():
     """
