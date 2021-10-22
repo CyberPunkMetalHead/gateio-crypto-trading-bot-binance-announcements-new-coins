@@ -78,11 +78,11 @@ def main():
                 last_price = get_last_price(symbol, pairing)
                 print("finished get_last_price")
                 print(f'{last_price=}')
-                print(f'{stored_price - (stored_price*sl /100)=}')
+                print(f'{stored_price + (stored_price*sl /100)=}')
                 # update stop loss and take profit values if threshold is reached
                 if float(last_price) > stored_price + (stored_price*coin_tp /100) and enable_tsl:
                     # increase as absolute value for TP
-                    new_tp = float(last_price) - (float(last_price)*ttp /100)
+                    new_tp = float(last_price) + (float(last_price)*ttp /100)
                     # convert back into % difference from when the coin was bought
                     new_tp = float( (new_tp - stored_price) / stored_price*100)
 
@@ -96,7 +96,7 @@ def main():
                     store_order('order.json', order)
 
                 # close trade if tsl is reached or trail option is not enabled
-                elif float(last_price) < stored_price - (stored_price*sl /100) or float(last_price) > stored_price + (stored_price*coin_tp /100) and not enable_tsl:
+                elif float(last_price) < stored_price + (stored_price*sl /100) or float(last_price) > stored_price + (stored_price*coin_tp /100) and not enable_tsl:
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
