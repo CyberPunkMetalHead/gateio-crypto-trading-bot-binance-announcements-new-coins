@@ -36,8 +36,9 @@ else:
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
 global supported_currencies
+print("starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
-
+print("finished get_all_currencies")
 
 def main():
     """
@@ -144,13 +145,15 @@ def main():
             announcement_coin = False
 
         global supported_currencies
-        if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins:
+        if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
             print(f'New annoucement detected: {announcement_coin}')
             # if os.path.isfile('currencies.json'):
                 # supported_currencies = json.load(open('currencies.json',))
             if supported_currencies is not False:
                 if announcement_coin in supported_currencies:
+                    print("starting get_last_price")
                     price = get_last_price(announcement_coin, pairing)
+                    print("finished get_last_price")
                     try:
                         # Run a test trade if true
                         if config['TRADE_OPTIONS']['TEST']:
@@ -175,9 +178,11 @@ def main():
                             print('PLACING TEST ORDER')
                         # place a live order if False
                         else:
+                            print("starting place_order with : ",announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
+                            print("finished place_order") 
 
                     except Exception as e:
                         print(e)
@@ -192,7 +197,7 @@ def main():
             else:
                 get_all_currencies()
         else:
-            print(f"No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating. You can comment me out, I live on line 176 in main.py")
+            print(f"No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating.")
 
         time.sleep(3)
         #except Exception as e:
