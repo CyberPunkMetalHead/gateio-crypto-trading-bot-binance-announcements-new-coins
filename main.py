@@ -2,6 +2,7 @@ from trade_client import *
 from store_order import *
 from load_config import *
 from new_listings_scraper import *
+from send_telegram import *
 
 from collections import defaultdict
 from datetime import datetime, time
@@ -51,6 +52,7 @@ def main():
     t = threading.Thread(target=search_and_update)
     t.start()
 
+    send_telegram("new-coin-bot is online")
 
     while True:
         #try:
@@ -96,7 +98,9 @@ def main():
                             if not test_mode:
                                 sell = place_order(symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
 
-                            print(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
+                            logString = f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL"
+                            print(logString)
+                            send_telegram(logString)
 
                             # remove order from json file
                             order.pop(coin)
@@ -175,7 +179,9 @@ def main():
                     print(e)
 
                 else:
-                    print(f"Order created with {qty} on {announcement_coin}")
+                    logString = f"Order created with {qty} on {announcement_coin}"
+                    print(logString)
+                    send_telegram(logString)
 
                     store_order('order.json', order)
             else:
