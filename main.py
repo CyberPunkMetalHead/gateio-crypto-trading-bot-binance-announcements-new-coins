@@ -100,6 +100,7 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
+
                             print("starting sell place_order with : ",symbol, pairing, volume*99.5/100, 'sell', last_price)
                             sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
                             print("finish sell place_order")
