@@ -100,8 +100,8 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            print("starting sell place_order with : ",symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
-                            sell = place_order(symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
+                            print("starting sell place_order with : ",symbol, pairing,volume*99.5/100, 'sell', last_price)
+                            sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
                             print("finish sell place_order")
 
                         print(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
