@@ -8,6 +8,7 @@
     # in minutes
     RUN_EVERY: 0.025
     TEST: True
+    # In %
     SL: -3
     TP: 2
     ENABLE_TSL: True
