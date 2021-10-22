@@ -100,11 +100,11 @@ def main():
                         if not test_mode:
                             sell = place_order(symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
 
-                        print(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
+                            print(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
 
-                        # remove order from json file
-                        order.pop(coin)
-                        store_order('order.json', order)
+                            # remove order from json file
+                            order.pop(coin)
+                            store_order('order.json', order)
 
                     except Exception as e:
                         print(e)
