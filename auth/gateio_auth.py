@@ -8,7 +8,7 @@ def load_gateio_creds(file):
             auth = yaml.load(file, Loader=yaml.FullLoader)
     except FileNotFoundError as e:
         # if auth config doesn't exist, query user if they want help
-        auth = create_config(file)
+        create_config(file)
         raise FileNotFoundError("check that your "+file+" exists, use "+file.split(".")[0]+
                                 ".example.yml as a template. e: " + str(e))
 
