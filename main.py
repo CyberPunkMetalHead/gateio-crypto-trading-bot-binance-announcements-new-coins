@@ -11,6 +11,8 @@ import threading
 import json
 import os.path
 
+old_coins = ["CHESS","OTHERCRAP"]
+
 
 # loads local configuration
 config = load_config('config.yml')
@@ -68,7 +70,10 @@ def main():
                     volume = order[coin]['volume']
                     symbol = order[coin]['symbol']
 
+                    print("starting get_last_price")
                     last_price = get_last_price(symbol, pairing)
+                    print("after get_last_price")
+                    print("coin : ", coin)
                     print(f'{last_price=}')
                     print(f'{stored_price - (stored_price*sl /100)=}')
                     # update stop loss and take profit values if threshold is reached
@@ -94,7 +99,9 @@ def main():
                         try:
                             # sell for real if test mode is set to false
                             if not test_mode:
+                                print("starting place_order")
                                 sell = place_order(symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
+                                print("after place_order")
 
                             print(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
 
@@ -140,9 +147,11 @@ def main():
             else:
                 announcement_coin = False
 
-            if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins:
+            if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
                 print(f'New annoucement detected: {announcement_coin}')
+                print("trying to run get_last_price")
                 price = get_last_price(announcement_coin, pairing)
+                print("finished get_last_price")
                 try:
                     # Run a test trade if true
                     if config['TRADE_OPTIONS']['TEST']:
@@ -167,7 +176,9 @@ def main():
                         print('PLACING TEST ORDER')
                     # place a live order if False
                     else:
+                        print("starting place_order : ", announcement_coin, pairing, qty,'buy', price)
                         order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
+                        print("finished place_order")
                         order[announcement_coin]['tp'] = tp
                         order[announcement_coin]['sl'] = sl
 
@@ -179,7 +190,7 @@ def main():
 
                     store_order('order.json', order)
             else:
-                print(f"No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating. You can comment me out, I live on line 176 in main.py")
+                print(f"No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating.")
 
             time.sleep(3)
         #except Exception as e:
