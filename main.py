@@ -75,6 +75,7 @@ def main():
                 symbol = order[coin]['symbol']
 
                 last_price = get_last_price(symbol, pairing)
+                print("existing coin: ", coin)
                 print(f'{last_price=}')
                 print(f'{stored_price - (stored_price*sl /100)=}')
                 # update stop loss and take profit values if threshold is reached
