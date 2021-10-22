@@ -6,6 +6,9 @@ order.json
 sold.json
 new_listing.json
 
+# Ignore currency list
+currencies.json
+
 # Ignore pycache
 __pycache__/
 auth/__pycache__/
