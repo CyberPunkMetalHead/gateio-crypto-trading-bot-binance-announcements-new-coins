@@ -65,6 +65,7 @@ def main():
         # basically the sell block and update TP and SL logic
         if len(order) > 0:
             for coin in list(order):
+                
                 # store some necessary trade info for a sell
                 stored_price = float(order[coin]['price'])
                 coin_tp = order[coin]['tp']
@@ -72,9 +73,15 @@ def main():
                 volume = order[coin]['volume']
                 symbol = order[coin]['symbol']
 
+                top_position_price = stored_price + (stored_price*coin_tp /100)
+
                 last_price = get_last_price(symbol, pairing)
-                print(f'{last_price=}')
-                print(f'{stored_price + (stored_price*sl /100)=}')
+
+                print(f'{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
+
+                stop_loss_price = stored_price + (stored_price*coin_sl /100)
+                print(f'{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
+                
                 # update stop loss and take profit values if threshold is reached
                 if float(last_price) > stored_price + (stored_price*coin_tp /100) and enable_tsl:
                     # increase as absolute value for TP
@@ -91,16 +98,20 @@ def main():
                     order[coin]['sl'] = new_sl
                     store_order('order.json', order)
 
-                    print(f'updated tp: {round(new_tp, 3)} and sl: {round(new_sl, 3)}')
+                    new_top_position_price = stored_price + (stored_price*new_tp /100)
+                    new_stop_loss_price = stored_price + (stored_price*new_sl /100)
+
+                    print(f'updated tp: {round(new_tp, 3)}% / ${"{:,.2f}".format(new_top_position_price)}')
+                    print(f'updated sl: {round(new_sl, 3)}% / ${"{:,.2f}".format(new_stop_loss_price)}')
 
                 # close trade if tsl is reached or trail option is not enabled
-                elif float(last_price) < stored_price + (stored_price*sl /100) or float(last_price) > stored_price + (stored_price*coin_tp /100) and not enable_tsl:
+                elif float(last_price) < stored_price + (stored_price*coin_sl /100) or float(last_price) > stored_price + (stored_price*coin_tp /100) and not enable_tsl:
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            sell = place_order(symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
+                            sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
 
-                        print(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
+                        print(f"sold {volume} units of {coin} at a price of {last_price} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
 
                         # remove order from json file
                         order.pop(coin)
@@ -184,7 +195,7 @@ def main():
                         print(e)
 
                     else:
-                        print(f"Order created with {qty} on {announcement_coin}")
+                        print(f'Order created with {qty} on {announcement_coin} at a price of {price} each')
 
                         store_order('order.json', order)
                 else:
@@ -192,8 +203,8 @@ def main():
                     os.remove("new_listing.json")
             else:
                 get_all_currencies()
-        else:
-            print(f"No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating. You can comment me out, I live on line 176 in main.py")
+        #else:
+        #    print(f"No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating. You can comment me out, I live on line 176 in main.py")
 
         time.sleep(3)
         #except Exception as e:
