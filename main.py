@@ -80,7 +80,7 @@ def main():
                     # increase as absolute value for TP
                     new_tp = float(last_price) + (float(last_price)*ttp /100)
                     # convert back into % difference from when the coin was bought
-                    new_tp = float( (new_tp + stored_price) / stored_price*100)
+                    new_tp = float( (new_tp - stored_price) / stored_price*100)
 
                     # same deal as above, only applied to trailing SL
                     new_sl = float(last_price) - (float(last_price)*tsl /100)
