@@ -74,8 +74,9 @@ def main():
                 volume = order[coin]['volume']
                 symbol = order[coin]['symbol']
 
+                print("get_last_price existing coin: ", coin)
                 last_price = get_last_price(symbol, pairing)
-                print("existing coin: ", coin)
+                print("finished get_last_price")
                 print(f'{last_price=}')
                 print(f'{stored_price - (stored_price*sl /100)=}')
                 # update stop loss and take profit values if threshold is reached
@@ -99,7 +100,9 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
+                            print("starting sell place_order with : ",symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
                             sell = place_order(symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
+                            print("finish sell place_order")
 
                         print(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
 
@@ -179,11 +182,11 @@ def main():
                             print('PLACING TEST ORDER')
                         # place a live order if False
                         else:
-                            print("starting place_order with : ",announcement_coin, pairing, qty,'buy', price)
+                            print("starting buy place_order with : ",announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
-                            print("finished place_order") 
+                            print("finished buy place_order")
 
                     except Exception as e:
                         print(e)
