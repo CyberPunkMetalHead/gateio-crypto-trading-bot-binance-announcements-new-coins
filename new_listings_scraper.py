@@ -29,10 +29,7 @@ def get_last_coin():
 
     uppers = None
 
-    if len(found_coin) == 1:
-        uppers = found_coin[0]
-    if len(found_coin) != 1:
-        uppers = ""
+
 
     exclusions = ['Futures', 'Margin', 'adds', 'Adds']
     for item in exclusions:
