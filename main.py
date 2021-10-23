@@ -36,9 +36,10 @@ else:
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
 global supported_currencies
-print("starting get_all_currencies")
+logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
-print("finished get_all_currencies")
+logger.debug("Finished get_all_currencies")
+
 
 def main():
     """
@@ -78,7 +79,7 @@ def main():
                               coin_tp + '\r\nCoin SL: ' + coin_sl + '\r\nVolume: ' +
                               volume + '\r\nSymbol: ' + symbol)
 
-                print("get_last_price existing coin: ", coin)
+                logger.info("get_last_price existing coin: ", coin)
                 last_price = get_last_price(symbol, pairing)
 
                 logger.info("Finished get_last_price")
@@ -112,9 +113,10 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            print("starting sell place_order with : ",symbol, pairing, volume*99.5/100, 'sell', last_price)
+                            logger.info("starting sell place_order with : ",symbol,
+                                      pairing, volume*99.5/100, 'sell', last_price)
                             sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
-                            print("finish sell place_order")
+                            logger.info("Finish sell place_order")
 
                         logger.info(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
 
@@ -170,7 +172,7 @@ def main():
 
             if supported_currencies is not False:
                 if announcement_coin in supported_currencies:
-                    print("starting get_last_price")
+                    logger.debug("Starting get_last_price")
                     price = get_last_price(announcement_coin, pairing)
 
                     logger.debug('Coin price: ' + price)
@@ -205,7 +207,7 @@ def main():
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
-                            print("finished buy place_order")
+                            logger.info("Finished buy place_order")
 
                     except Exception as e:
                         logger.error(e)

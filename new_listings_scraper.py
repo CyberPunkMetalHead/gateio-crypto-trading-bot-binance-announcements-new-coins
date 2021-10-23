@@ -20,10 +20,10 @@ def get_last_coin():
     """
     Scrapes new listings page for and returns new Symbol when appropriate
     """
-    print("pulling announcement page")
+    logger.debug("Pulling announcement page")
     latest_announcement = requests.get("https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?catalogId=48&pageNo=1&pageSize=15")
     latest_announcement = latest_announcement.json()
-    print("finished pulling announcement page")
+    logger.debug("Finished pulling announcement page")
     latest_announcement = latest_announcement['data']['articles'][0]['title']
 
     found_coin = re.findall('\(([^)]+)', latest_announcement)
