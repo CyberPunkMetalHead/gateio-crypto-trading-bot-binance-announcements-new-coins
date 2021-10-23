@@ -81,7 +81,7 @@ def main():
                 print("get_last_price existing coin: ", coin)
                 last_price = get_last_price(symbol, pairing)
 
-                logger.info("Finished get_last_price)
+                logger.info("Finished get_last_price")
                 logger.info(f'{last_price=}')
                 logger.info(f'{stored_price + (stored_price*sl /100)=}')
 
