@@ -41,7 +41,7 @@ def get_last_coin():
         else:
             if len(found_coin) == 1:
                 uppers = found_coin[0]
-                logger.info('Uppers: ' + uppers)
+                logger.info('New coin detected: ' + uppers)
             if len(found_coin) != 1:
                 uppers = None
 
