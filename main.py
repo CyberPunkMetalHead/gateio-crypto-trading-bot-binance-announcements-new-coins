@@ -12,6 +12,8 @@ import threading
 import json
 import os.path
 
+old_coins = ["CHESS","OTHERCRAP"]
+
 # loads local configuration
 config = load_config('config.yml')
 
@@ -34,8 +36,9 @@ else:
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
 global supported_currencies
+print("starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
-
+print("finished get_all_currencies")
 
 def main():
     """
@@ -60,7 +63,6 @@ def main():
     t2.start()
 
     while True:
-
         # check if the order file exists and load the current orders
         # basically the sell block and update TP and SL logic
         if len(order) > 0:
@@ -76,9 +78,13 @@ def main():
                               coin_tp + '\r\nCoin SL: ' + coin_sl + '\r\nVolume: ' +
                               volume + '\r\nSymbol: ' + symbol)
 
+                print("get_last_price existing coin: ", coin)
                 last_price = get_last_price(symbol, pairing)
+
+                logger.info("Finished get_last_price)
                 logger.info(f'{last_price=}')
                 logger.info(f'{stored_price + (stored_price*sl /100)=}')
+
                 # update stop loss and take profit values if threshold is reached
                 if float(last_price) > stored_price + (
                         stored_price * coin_tp / 100) and enable_tsl:
@@ -106,7 +112,9 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            sell = place_order(symbol, pairing, coin['volume']*99.5/100, 'sell', last_price)
+                            print("starting sell place_order with : ",symbol, pairing, volume*99.5/100, 'sell', last_price)
+                            sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
+                            print("finish sell place_order")
 
                         logger.info(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
 
@@ -156,12 +164,18 @@ def main():
             announcement_coin = False
 
         global supported_currencies
-        if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins:
+
+        if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
             logger.info(f'New annoucement detected: {announcement_coin}')
+
             if supported_currencies is not False:
                 if announcement_coin in supported_currencies:
+                    print("starting get_last_price")
                     price = get_last_price(announcement_coin, pairing)
+
                     logger.debug('Coin price: ' + price)
+                    logger.debug('Finished get_last_price')
+
                     try:
                         # Run a test trade if true
                         if config['TRADE_OPTIONS']['TEST']:
@@ -187,11 +201,11 @@ def main():
                             logger.debug(order[announcement_coin])
                         # place a live order if False
                         else:
-                            order[announcement_coin] = place_order(announcement_coin,
-                                                                   pairing, qty, 'buy',
-                                                                   price)
+                            logger.info("starting buy place_order with : ",announcement_coin, pairing, qty,'buy', price)
+                            order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
+                            print("finished buy place_order")
 
                     except Exception as e:
                         logger.error(e)
@@ -207,6 +221,7 @@ def main():
             else:
                 get_all_currencies()
         else:
+
             logger.info(
                 "No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating")
 

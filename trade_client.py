@@ -40,5 +40,7 @@ def place_order(base,quote, amount, side, last_price):
         order = spot_api.create_order(order)
     except Exception as e:
         logger.error(e)
+        raise
+
     else:
         return order
