@@ -6,6 +6,9 @@ order.json
 sold.json
 new_listing.json
 
+# Ignore bot log
+bot.log
+
 # Ignore currency list
 currencies.json
 
