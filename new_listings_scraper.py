@@ -8,6 +8,7 @@ import requests
 from gate_api import ApiClient, SpotApi
 
 from auth.gateio_auth import *
+from logger import logger
 from store_order import *
 
 client = load_gateio_creds('auth/auth.yml')
@@ -38,6 +39,7 @@ def get_last_coin():
         else:
             if len(found_coin) == 1:
                 uppers = found_coin[0]
+                logger.info('New coin detected: ' + uppers)
             if len(found_coin) != 1:
                 uppers = None
 
@@ -56,11 +58,11 @@ def store_new_listing(listing):
         else:
             file = listing
             store_order('new_listing.json', file)
-            print("New listing detected, updating file")
+            logger.info("New listing detected, updating file")
             return file
     else:
         new_listing = store_order('new_listing.json', listing)
-        print("File does not exist, creating file")
+        logger.info("File does not exist, creating file")
 
         return new_listing
 
@@ -73,9 +75,10 @@ def search_and_update():
         latest_coin = get_last_coin()
         if latest_coin:
             store_new_listing(latest_coin)
-        print("Checking for coin announcements every 1 minute (in a separate thread)")
+        logger.info("Checking for coin announcements every 1 minute (in a separate "
+                   "thread)")
 
-        time.sleep(10)
+        time.sleep(3)
 
 
 def get_all_currencies(single=False):
@@ -85,12 +88,12 @@ def get_all_currencies(single=False):
     """
     global supported_currencies
     while True:
-        print("Getting the list of supported currencies from gate io")
+        logger.info("Getting the list of supported currencies from gate io")
         all_currencies = ast.literal_eval(str(spot_api.list_currencies()))
         currency_list = [currency['currency'] for currency in all_currencies]
         with open('currencies.json', 'w') as f:
             json.dump(currency_list, f, indent=4)
-            print("List of gate io currencies saved to currencies.json. Waiting 5 "
+            logger.info("List of gate io currencies saved to currencies.json. Waiting 5 "
                   "minutes before refreshing list...")
         supported_currencies = currency_list
         if single:
