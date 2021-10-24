@@ -395,6 +395,7 @@ def sell():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 }
+                            logger.info(f'Sold coins:\r\n {sold_coins[coin]}')
 
                             logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
 
