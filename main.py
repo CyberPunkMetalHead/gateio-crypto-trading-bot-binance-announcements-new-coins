@@ -75,10 +75,6 @@ def main():
                 coin_sl = order[coin]['sl']
                 volume = order[coin]['volume']
                 symbol = order[coin]['symbol']
-                logger.debug('Data for sell:\r\n' + 'Coin Info: \r\n' + coin +
-                              '\r\nStored price: ' + stored_price + "\r\nCoin TP: " +
-                              coin_tp + '\r\nCoin SL: ' + coin_sl + '\r\nVolume: ' +
-                              volume + '\r\nSymbol: ' + symbol)
 
                 top_position_price = stored_price + (stored_price*coin_tp /100)
 
@@ -86,7 +82,6 @@ def main():
 
                 stop_loss_price = stored_price + (stored_price*coin_sl /100)
 
-                logger.info("get_last_price existing coin: ", coin)
                 logger.info(f'{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
                 logger.info(f'{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
 
@@ -126,7 +121,7 @@ def main():
                             sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
                             logger.info("Finish sell place_order")
 
-                        logger.info(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
+                        logger.info(f"sold {volume} units of {coin} at a price of {last_price} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
 
                         # remove order from json file
                         order.pop(coin)
@@ -162,7 +157,8 @@ def main():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 'price': last_price}
-                            logger.info('Sold coins:\r\n' + sold_coins[coin])
+                            logger.info('Sold coins:\r\n')
+                            logger.info(sold_coins[coin])
 
                             store_order('sold.json', sold_coins)
 
@@ -208,7 +204,7 @@ def main():
                                 'iceberg': '0'
                             }
                             logger.info('PLACING TEST ORDER')
-                            logger.debug(order[announcement_coin])
+                            logger.info(order[announcement_coin])
                         # place a live order if False
                         else:
                             logger.info("starting buy place_order with : ",announcement_coin, pairing, qty,'buy', price)
