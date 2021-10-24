@@ -6,6 +6,12 @@ order.json
 sold.json
 new_listing.json
 
+# Ignore bot log
+bot.log
+
+# Ignore currency list
+currencies.json
+
 # Ignore pycache
 __pycache__/
 auth/__pycache__/

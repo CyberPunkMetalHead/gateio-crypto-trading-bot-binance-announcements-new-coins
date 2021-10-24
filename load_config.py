@@ -54,3 +54,4 @@ def create_config(config_name, subdirectory=None):
         print("generated file: " + config_name + " please take a look at the values, then re-run the application")
 
     sys.exit()
+
