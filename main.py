@@ -74,12 +74,11 @@ def main():
                 coin_sl = order[coin]['sl']
                 volume = order[coin]['volume']
                 symbol = order[coin]['symbol']
-                logger.debug('Data for sell:\r\n' + 'Coin Info: \r\n' + coin +
-                              '\r\nStored price: ' + str(stored_price) + "\r\nCoin TP: " +
-                              str(coin_tp) + '\r\nCoin SL: ' + str(coin_sl) + '\r\nVolume: ' +
-                              str(volume) + '\r\nSymbol: ' + symbol)
+                logger.debug(f'Data for sell:\r\n Coin Info: \r\n {coin} \r\nStored price: {str(stored_price)}' + 
+                             '\r\nCoin TP:  {str(coin_tp) } \r\nCoin SL: {str(coin_sl)} \r\nVolume: {str(volume)}' +
+                             '\r\nSymbol: {symbol}')
 
-                logger.info("get_last_price existing coin: " + coin)
+                logger.info(f"get_last_price existing coin: {coin}")
                 last_price = get_last_price(symbol, pairing)
 
                 logger.info("Finished get_last_price")
@@ -113,8 +112,7 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            logger.info("starting sell place_order with : ",symbol,
-                                      pairing, volume*99.5/100, 'sell', last_price)
+                            logger.info(f"starting sell place_order with : ,{symbol =}, {pairing =}, {(volume*99.5/100) =}, sell, {last_price =}")
                             sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
                             logger.info("Finish sell place_order")
 
@@ -154,7 +152,7 @@ def main():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 'price': last_price}
-                            logger.info('Sold coins:\r\n' + sold_coins[coin])
+                            logger.info(f'Sold coins:\r\n {sold_coins[coin]}')
 
                             store_order('sold.json', sold_coins)
 
@@ -175,7 +173,7 @@ def main():
                     logger.debug("Starting get_last_price")
                     price = get_last_price(announcement_coin, pairing)
 
-                    logger.debug('Coin price: ' + price)
+                    logger.debug(f"Coin price: { price}")
                     logger.debug('Finished get_last_price')
 
                     try:
@@ -203,7 +201,7 @@ def main():
                             logger.debug(order[announcement_coin])
                         # place a live order if False
                         else:
-                            logger.info("starting buy place_order with : ",announcement_coin, pairing, qty,'buy', price)
+                            logger.info(f'starting buy place_order with : {announcement_coin = }, {pairing =}, {qty =}, buy, {price = }')
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
@@ -216,7 +214,7 @@ def main():
                         logger.info(f"Order created with {qty} on {announcement_coin}")
                         store_order('order.json', order)
                 else:
-                    logger.warning(f"Coin " + announcement_coin + " is not supported on gate io")
+                    logger.warning(f"Coin  {announcement_coin } is not supported on gate io")
                     os.remove("new_listing.json")
                     logger.debug('Removed new_listing.json due to coin not being '
                                   'listed on gate io')
