@@ -12,7 +12,7 @@ import threading
 import json
 import os.path
 
-old_coins = ["CHESS1","OTHERCRAP"]
+old_coins = ["CHESS","OTHERCRAP"]
 
 # loads local configuration
 config = load_config('config.yml')
