@@ -12,7 +12,7 @@ import threading
 import json
 import os.path
 
-old_coins = ["CHESS","OTHERCRAP"]
+old_coins = ["CHESS1","OTHERCRAP"]
 
 # loads local configuration
 config = load_config('config.yml')
@@ -75,11 +75,11 @@ def main():
                 volume = order[coin]['volume']
                 symbol = order[coin]['symbol']
                 logger.debug('Data for sell:\r\n' + 'Coin Info: \r\n' + coin +
-                              '\r\nStored price: ' + stored_price + "\r\nCoin TP: " +
-                              coin_tp + '\r\nCoin SL: ' + coin_sl + '\r\nVolume: ' +
-                              volume + '\r\nSymbol: ' + symbol)
+                              '\r\nStored price: ' + str(stored_price) + "\r\nCoin TP: " +
+                              str(coin_tp) + '\r\nCoin SL: ' + str(coin_sl) + '\r\nVolume: ' +
+                              str(volume) + '\r\nSymbol: ' + symbol)
 
-                logger.info("get_last_price existing coin: ", coin)
+                logger.info("get_last_price existing coin: " + coin)
                 last_price = get_last_price(symbol, pairing)
 
                 logger.info("Finished get_last_price")
