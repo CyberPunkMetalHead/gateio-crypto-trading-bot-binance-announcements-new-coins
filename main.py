@@ -115,15 +115,6 @@ def main():
                     logger.info(f'updated sl: {round(new_sl, 3)}% / ${"{:,.2f}".format(new_stop_loss_price)}')
 
                 # close trade if tsl is reached or trail option is not enabled
-                elif float(last_price) < stored_price + (stored_price*coin_sl /100) or float(last_price) > stored_price + (stored_price*coin_tp /100) and not enable_tsl:
-                    try:
-                        # sell for real if test mode is set to false
-                        if not test_mode:
-                            sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
-
-                        logger.info(f"sold {volume} units of {coin} at a price of {last_price} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
-
-                # close trade if tsl is reached or trail option is not enabled
                 elif float(last_price) < stored_price + (
                         stored_price * sl / 100) or float(last_price) > stored_price + (
                         stored_price * coin_tp / 100) and not enable_tsl:
