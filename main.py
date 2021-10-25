@@ -111,7 +111,7 @@ def main():
 
                 # close trade if tsl is reached or trail option is not enabled
                 elif float(last_price) < stored_price + (
-                        stored_price * sl / 100) or float(last_price) > stored_price + (
+                        stored_price * coin_sl / 100) or float(last_price) > stored_price + (
                         stored_price * coin_tp / 100) and not enable_tsl:
                     try:
                         # sell for real if test mode is set to false
