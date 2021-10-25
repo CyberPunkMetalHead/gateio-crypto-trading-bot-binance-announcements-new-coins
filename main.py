@@ -124,8 +124,8 @@ def main():
                             logger.info("Finish sell place_order")
 
                         message = f"sold {volume} units of {coin} at a price of {last_price} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL"
-                        send_sms_message(message)
                         logger.info(message)
+                        send_sms_message(message)
 
                         # remove order from json file
                         order.pop(coin)
