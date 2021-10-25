@@ -71,12 +71,18 @@ def search_and_update():
     """
     Pretty much our main func
     """
+
+    count = 57
+
     while True:
         latest_coin = get_last_coin()
         if latest_coin:
             store_new_listing(latest_coin)
-        logger.info("Checking for coin announcements every 1 minute (in a separate "
-                   "thread)")
+
+        count = count + 3
+        if count % 60 == 0:
+            logger.info("One minute has passed.  Checking for coin announcements every 3 seconds (in a separate thread)")
+            count = 0
 
         time.sleep(3)
 
