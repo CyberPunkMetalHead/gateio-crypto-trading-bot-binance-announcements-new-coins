@@ -80,10 +80,10 @@ def search_and_update():
                        "thread)")
         except Exception as e:
             logger.info(e)
+        time.sleep(3)
     else:
         logger.info("while True loop in search_and_update has stopped.")
-
-        time.sleep(3)
+        break
 
 
 def get_all_currencies(single=False):
