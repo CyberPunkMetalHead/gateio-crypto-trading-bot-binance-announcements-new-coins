@@ -1,6 +1,7 @@
 import os
 import yaml
 
+
 def load_config(file):
 
     # read env vars first
