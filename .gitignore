@@ -1,5 +1,5 @@
 # Ignore creds file
-auth/auth.yml
+auth.yml
 
 # Ignore orders
 order.json

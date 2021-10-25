@@ -1,3 +1,6 @@
+import settings
+settings.init()
+
 from trade_client import *
 from store_order import *
 from logger import logger
@@ -15,21 +18,21 @@ import os.path
 old_coins = ["CHESS","OTHERCRAP"]
 
 # loads local configuration
-config = load_config('config.yml')
+config = load_config(settings.config_folder + '/config.yml')
 
 # load necessary files
-if os.path.isfile('sold.json'):
-    sold_coins = load_order('sold.json')
+if os.path.isfile(settings.data_folder + '/sold.json'):
+    sold_coins = load_order(settings.data_folder + '/sold.json')
 else:
     sold_coins = {}
 
-if os.path.isfile('order.json'):
-    order = load_order('order.json')
+if os.path.isfile(settings.data_folder + '/order.json'):
+    order = load_order(settings.data_folder + '/order.json')
 else:
     order = {}
 
-if os.path.isfile('new_listing.json'):
-    announcement_coin = load_order('new_listing.json')
+if os.path.isfile(settings.data_folder + '/new_listing.json'):
+    announcement_coin = load_order(settings.data_folder + '/new_listing.json')
 else:
     announcement_coin = False
 
@@ -101,7 +104,7 @@ def main():
                     # new values to be added to the json file
                     order[coin]['tp'] = new_tp
                     order[coin]['sl'] = new_sl
-                    store_order('order.json', order)
+                    store_order(settings.data_folder + '/order.json', order)
 
                     logger.info(f'Updated TP: {round(new_tp, 3)} and SL:'
                                  f' {round(new_sl, 3)}')
@@ -122,7 +125,7 @@ def main():
 
                         # remove order from json file
                         order.pop(coin)
-                        store_order('order.json', order)
+                        store_order(settings.data_folder + '/order.json', order)
                         logger.debug('Order saved in order.json')
 
                     except Exception as e:
@@ -132,7 +135,7 @@ def main():
                     else:
                         if not test_mode:
                             sold_coins[coin] = sell
-                            store_order('sold.json', sold_coins)
+                            store_order(settings.data_folder + '/sold.json', sold_coins)
                             logger.info('Order saved in sold.json')
                         else:
                             sold_coins[coin] = {
@@ -156,12 +159,12 @@ def main():
                                 'price': last_price}
                             logger.info('Sold coins:\r\n' + sold_coins[coin])
 
-                            store_order('sold.json', sold_coins)
+                            store_order(settings.data_folder + '/sold.json', sold_coins)
 
         # the buy block and logic pass
-        # announcement_coin = load_order('new_listing.json')
-        if os.path.isfile('new_listing.json'):
-            announcement_coin = load_order('new_listing.json')
+        # announcement_coin = load_order(settings.data_folder + '/new_listing.json')
+        if os.path.isfile(settings.data_folder + '/new_listing.json'):
+            announcement_coin = load_order(settings.data_folder + '/new_listing.json')
         else:
             announcement_coin = False
 
@@ -214,10 +217,10 @@ def main():
 
                     else:
                         logger.info(f"Order created with {qty} on {announcement_coin}")
-                        store_order('order.json', order)
+                        store_order(settings.data_folder + '/order.json', order)
                 else:
                     logger.warning(f"Coin " + announcement_coin + " is not supported on gate io")
-                    os.remove("new_listing.json")
+                    os.remove(settings.data_folder + "/new_listing.json")
                     logger.debug('Removed new_listing.json due to coin not being '
                                   'listed on gate io')
             else:
