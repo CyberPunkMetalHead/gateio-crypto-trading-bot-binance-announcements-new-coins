@@ -20,6 +20,6 @@ def load_gateio_creds(file):
             auth[key] = os.getenv(value)
 
         if auth[key] is None:
-            raise Exception("Missing configuration: TRADE_OPTIONS: "+key)
+            raise Exception("Missing configuration: "+key)
 
     return Configuration(key=auth['gateio_api'], secret=auth['gateio_secret'])
