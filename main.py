@@ -62,7 +62,7 @@ def main():
 
     t2 = threading.Thread(target=get_all_currencies)
     t2.start()
-    
+
     while True:
         # check if the order file exists and load the current orders
         # basically the sell block and update TP and SL logic
