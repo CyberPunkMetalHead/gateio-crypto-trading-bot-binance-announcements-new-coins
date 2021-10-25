@@ -22,4 +22,4 @@ def load_gateio_creds(file):
         if auth[key] is None:
             raise Exception("Missing configuration: TRADE_OPTIONS: "+key)
 
-    return Configuration(key=auth.gateio_api, secret=auth.gateio_secret)
+    return Configuration(key=auth['gateio_api'], secret=auth['gateio_secret'])
