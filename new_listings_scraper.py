@@ -72,6 +72,7 @@ def search_and_update():
     Pretty much our main func
     """
     while True:
+        time.sleep(3)
         try:
             latest_coin = get_last_coin()
             if latest_coin:
@@ -80,10 +81,8 @@ def search_and_update():
                        "thread)")
         except Exception as e:
             logger.info(e)
-        time.sleep(3)
     else:
         logger.info("while True loop in search_and_update has stopped.")
-        break
 
 
 def get_all_currencies(single=False):
