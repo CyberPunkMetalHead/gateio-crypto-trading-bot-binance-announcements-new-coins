@@ -72,11 +72,16 @@ def search_and_update():
     Pretty much our main func
     """
     while True:
-        latest_coin = get_last_coin()
-        if latest_coin:
-            store_new_listing(latest_coin)
-        logger.info("Checking for coin announcements every 1 minute (in a separate "
-                   "thread)")
+        try:
+            latest_coin = get_last_coin()
+            if latest_coin:
+                store_new_listing(latest_coin)
+            logger.info("Checking for coin announcements every 1 minute (in a separate "
+                       "thread)")
+        except Exception as e:
+            logger.info(e)
+    else:
+        logger.info("while True loop in search_and_update has stopped.")
 
         time.sleep(3)
 
