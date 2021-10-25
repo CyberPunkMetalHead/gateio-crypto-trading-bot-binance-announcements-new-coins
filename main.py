@@ -224,7 +224,7 @@ def main():
                 get_all_currencies()
         else:
 
-            logger.info(
+            logger.debug(
                 "No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating")
 
         time.sleep(3)
