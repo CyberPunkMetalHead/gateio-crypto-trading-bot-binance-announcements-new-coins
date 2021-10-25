@@ -3,6 +3,8 @@ from store_order import *
 from logger import logger
 from load_config import *
 from new_listings_scraper import *
+from send_sms import *
+
 
 from collections import defaultdict
 from datetime import datetime, time
@@ -11,6 +13,7 @@ import threading
 
 import json
 import os.path
+
 
 old_coins = ["CHESS","OTHERCRAP"]
 
@@ -120,7 +123,9 @@ def main():
                             sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
                             logger.info("Finish sell place_order")
 
-                        logger.info(f"sold {volume} units of {coin} at a price of {last_price} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
+                        message = f"sold {volume} units of {coin} at a price of {last_price} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL"
+                        send_sms_message(message)
+                        logger.info(message)
 
                         # remove order from json file
                         order.pop(coin)
@@ -216,9 +221,13 @@ def main():
                         logger.error(e)
 
                     else:
-                        logger.info(f'Order created with {qty} on {announcement_coin} at a price of {price} each')
+                        
+                        message = f'Order created with {qty} on {announcement_coin} at a price of {price} each'
+                        logger.info(message)
+                        send_sms_message(message)
 
                         store_order('order.json', order)
+                        
                 else:
                     logger.warning(f"Coin " + announcement_coin + " is not supported on gate io")
                     os.remove("new_listing.json")

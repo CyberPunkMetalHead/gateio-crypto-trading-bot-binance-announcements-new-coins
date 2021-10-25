@@ -1,0 +1,6 @@
+---
+  # twilio 
+  twilio_account_sid: "TWILIO_ACCOUNT_SID"
+  twilio_auth_token: "TWILIO_AUTH_TOKEN"
+  twilio_from_number: "+111111111111"
+  twilio_to_number: "+2222222222222"

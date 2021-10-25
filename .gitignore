@@ -1,5 +1,6 @@
 # Ignore creds file
 auth/auth.yml
+auth/auth_twilio.yml
 
 # Ignore orders
 order.json
