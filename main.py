@@ -3,7 +3,6 @@ from store_order import *
 from logger import logger
 from load_config import *
 from new_listings_scraper import *
-from send_telegram import *
 
 from collections import defaultdict
 from datetime import datetime, time
@@ -64,8 +63,6 @@ def main():
     t2 = threading.Thread(target=get_all_currencies)
     t2.start()
     
-    send_telegram("new-coin-bot is online")
-
     while True:
         # check if the order file exists and load the current orders
         # basically the sell block and update TP and SL logic
