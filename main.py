@@ -116,8 +116,7 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            logger.info("starting sell place_order with : ",symbol,
-                                      pairing, volume*99.5/100, 'sell', last_price)
+                            logger.info(f"starting sell place_order with : ,{symbol =}, {pairing =}, {(volume*99.5/100) =}, sell, {last_price =}")
                             sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
                             logger.info("Finish sell place_order")
 
@@ -157,8 +156,8 @@ def main():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 'price': last_price}
-                            logger.info('Sold coins:\r\n')
-                            logger.info(sold_coins[coin])
+                            
+                            logger.info(f'Sold coins:\r\n {sold_coins[coin]}')
 
                             store_order('sold.json', sold_coins)
 
@@ -179,7 +178,7 @@ def main():
                     logger.debug("Starting get_last_price")
                     price = get_last_price(announcement_coin, pairing)
 
-                    logger.debug('Coin price: ' + price)
+                    logger.debug(f"Coin price: { price}")
                     logger.debug('Finished get_last_price')
 
                     try:
@@ -207,7 +206,7 @@ def main():
                             logger.info(order[announcement_coin])
                         # place a live order if False
                         else:
-                            logger.info("starting buy place_order with : ",announcement_coin, pairing, qty,'buy', price)
+                            logger.info(f'starting buy place_order with : {announcement_coin = }, {pairing =}, {qty =}, buy, {price = }')
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
