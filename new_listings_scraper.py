@@ -75,7 +75,7 @@ def search_and_update():
         latest_coin = get_last_coin()
         if latest_coin:
             store_new_listing(latest_coin)
-        logger.info("Checking for coin announcements every 1 minute (in a separate "
+        logger.debug("Checking for coin announcements every 1 minute (in a separate "
                    "thread)")
 
         time.sleep(3)
