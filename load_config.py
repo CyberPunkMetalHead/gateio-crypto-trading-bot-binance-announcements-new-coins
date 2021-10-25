@@ -28,6 +28,23 @@ def load_config(file):
         },
     }
 
+    defaults = {
+        'TRADE_OPTIONS': {
+            'TP': 2,
+            'SL': -3,
+            'ENABLE_TSL': True,
+            'TSL': -4,
+            'TTP': 2,
+            'PAIRING': 'USDT',
+            'QUANTITY': 15,
+            'RUN_EVERY': 0.025,
+            'TEST': True
+        },
+        'LOGGING': {
+            'LOG_LEVEL': 'INFO',
+            'LOG_FILE': 'bot.log',
+        },
+    }
 
     for section_key, sectionsettings in config_mapping.items():
 
@@ -43,7 +60,9 @@ def load_config(file):
                 config[section_key][setting_key]
                 pass
             except KeyError:
-                raise Exception("Missing configuration: "+section_key+"/"+setting_key)
+                # raise Exception("Missing configuration: "+section_key+"/"+setting_key)
+                print("Error getting config for "+section_key+"/"+setting_key+", using default")
+                config[section_key][setting_key] = defaults[section_key][setting_key]
 
     return config
 
