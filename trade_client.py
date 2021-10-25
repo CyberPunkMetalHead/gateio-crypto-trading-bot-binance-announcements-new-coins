@@ -3,7 +3,9 @@ from logger import logger
 from auth.gateio_auth import *
 from gate_api import ApiClient, Configuration, Order, SpotApi
 
-client = load_gateio_creds('auth/auth.yml')
+import settings
+
+client = load_gateio_creds(settings.config_folder + '/auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
 
 
