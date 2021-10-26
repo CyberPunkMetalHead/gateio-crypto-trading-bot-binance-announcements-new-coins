@@ -54,7 +54,6 @@ def main():
     ttp = config['TRADE_OPTIONS']['TTP']
     pairing = config['TRADE_OPTIONS']['PAIRING']
     qty = config['TRADE_OPTIONS']['QUANTITY']
-    frequency = config['TRADE_OPTIONS']['RUN_EVERY']
     test_mode = config['TRADE_OPTIONS']['TEST']
 
     t = threading.Thread(target=search_and_update)
