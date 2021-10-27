@@ -18,3 +18,6 @@ auth/__pycache__/
 
 # Ignore config
 config.yml
+
+# Ignore test file
+test_order.py

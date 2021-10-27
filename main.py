@@ -10,6 +10,8 @@ import time
 import threading
 
 import json
+from json import JSONEncoder
+
 import os.path
 
 old_coins = ["CHESS","OTHERCRAP"]
@@ -41,6 +43,12 @@ supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
 
 
+# subclass JSONEncoder
+class orderEncoder(JSONEncoder):
+        def default(self, o):
+            return o.__dict__
+
+
 def main():
     """
     Sells, adjusts TP and SL according to trailing values
@@ -69,16 +77,14 @@ def main():
             for coin in list(order):
                 # store some necessary trade info for a sell
                 stored_price = float(order[coin]['price'])
+                print(stored_price)
                 coin_tp = order[coin]['tp']
                 coin_sl = order[coin]['sl']
                 volume = order[coin]['volume']
                 symbol = order[coin]['symbol']
-                logger.debug('Data for sell:\r\n' + 'Coin Info: \r\n' + coin +
-                              '\r\nStored price: ' + stored_price + "\r\nCoin TP: " +
-                              coin_tp + '\r\nCoin SL: ' + coin_sl + '\r\nVolume: ' +
-                              volume + '\r\nSymbol: ' + symbol)
+                logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
 
-                logger.info("get_last_price existing coin: ", coin)
+                logger.info(f'get_last_price existing coin: {coin}')
                 last_price = get_last_price(symbol, pairing)
 
                 logger.info("Finished get_last_price")
@@ -202,20 +208,20 @@ def main():
                             logger.debug(order[announcement_coin])
                         # place a live order if False
                         else:
-                            logger.info("starting buy place_order with : ",announcement_coin, pairing, qty,'buy', price)
+                            logger.info(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {qty=} | side = buy | {price=}')
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
-                            logger.info("Finished buy place_order")
+                            logger.info('Finished buy place_order')
 
                     except Exception as e:
                         logger.error(e)
 
                     else:
-                        logger.info(f"Order created with {qty} on {announcement_coin}")
+                        logger.info(f'Order created with {qty} on {announcement_coin}')
                         store_order('order.json', order)
                 else:
-                    logger.warning(f"Coin " + announcement_coin + " is not supported on gate io")
+                    logger.warning(f'{announcement_coin=} is not supported on gate io')
                     os.remove("new_listing.json")
                     logger.debug('Removed new_listing.json due to coin not being '
                                   'listed on gate io')
@@ -223,8 +229,7 @@ def main():
                 get_all_currencies()
         else:
 
-            logger.info(
-                "No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating")
+            logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
         time.sleep(3)
         # except Exception as e:
