@@ -60,6 +60,9 @@ def main():
     frequency = config['TRADE_OPTIONS']['RUN_EVERY']
     test_mode = config['TRADE_OPTIONS']['TEST']
 
+    if not test_mode:
+         logger.info(f'!!! LIVE MODE !!!')
+
     t = threading.Thread(target=search_and_update)
     t.start()
 
