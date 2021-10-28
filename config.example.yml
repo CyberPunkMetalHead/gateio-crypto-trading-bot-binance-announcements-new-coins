@@ -15,3 +15,5 @@
     # Logging levels used in this program are ERROR, INFO, and DEBUG
     LOG_LEVEL: INFO
     LOG_FILE: bot.log
+  TELEGRAM:
+    SEND_MESSAGES: False 

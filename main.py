@@ -2,6 +2,11 @@ from trade_client import *
 from store_order import *
 from logger import logger
 from load_config import *
+
+# Keep the supported currencies loaded in RAM so no time is wasted fetching
+# currencies.json from disk when an announcement is made
+global supported_currencies
+
 from new_listings_scraper import *
 
 from collections import defaultdict
@@ -36,9 +41,7 @@ if os.path.isfile('new_listing.json'):
 else:
     announcement_coin = False
 
-# Keep the supported currencies loaded in RAM so no time is wasted fetching
-# currencies.json from disk when an announcement is made
-global supported_currencies
+
 logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
@@ -58,7 +61,7 @@ def main():
     pairing = config['TRADE_OPTIONS']['PAIRING']
     qty = config['TRADE_OPTIONS']['QUANTITY']
     test_mode = config['TRADE_OPTIONS']['TEST']
-
+  
     t = threading.Thread(target=search_and_update)
     t.start()
 
@@ -172,10 +175,11 @@ def main():
         else:
             announcement_coin = False
 
-        global supported_currencies
+        # global supported_currencies
 
         if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
             logger.info(f'New annoucement detected: {announcement_coin}')
+            logger.error(f'New annoucement detected: {announcement_coin}')
 
             if supported_currencies is not False:
                 if announcement_coin in supported_currencies:
@@ -211,6 +215,7 @@ def main():
                         # place a live order if False
                         else:
                             logger.info(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {qty=} | side = buy | {price=}')
+                            logger.error(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {qty=} | side = buy | {price=}')
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin] = order[announcement_coin].__dict__
                             order[announcement_coin].pop("local_vars_configuration")
@@ -223,6 +228,7 @@ def main():
 
                     else:
                         logger.info(f'Order created with {qty} on {announcement_coin}')
+                        logger.error(f'Order created with {qty} on {announcement_coin}')
                         store_order('order.json', order)
                 else:
                     logger.warning(f'{announcement_coin=} is not supported on gate io')
@@ -234,7 +240,7 @@ def main():
         else:
 
             logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
-
+            
         time.sleep(3)
         # except Exception as e:
         # print(e)

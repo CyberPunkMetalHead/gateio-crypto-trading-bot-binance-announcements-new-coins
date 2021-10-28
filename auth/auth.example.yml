@@ -2,3 +2,7 @@
   # CLIENT DETAILS
   gateio_api: "GATEIO_API_KEY_v4"
   gateio_secret: "GATEIO_SECRET_v4"
+
+  # TELEGRAM AUTH
+  telegram_token: ""
+  telegram_clientID: ""
