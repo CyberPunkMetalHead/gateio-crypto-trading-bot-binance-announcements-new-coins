@@ -27,7 +27,7 @@ def get_last_coin():
     latest_announcement = latest_announcement['data']['articles'][0]['title']
     found_coin = re.findall('\(([^)]+)', latest_announcement)
     uppers = None
-
+    
     if 'Will List' not in latest_announcement:
         return None
     else:

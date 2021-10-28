@@ -13,6 +13,7 @@ import json
 from json import JSONEncoder
 
 import os.path
+import sys, os
 
 old_coins = ["OTHERCRAP"]
 
@@ -117,12 +118,11 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            logger.info("starting sell place_order with : ",symbol,
-                                      pairing, volume*99.5/100, 'sell', last_price)
-                            sell = place_order(symbol, pairing, volume*99.5/100, 'sell', last_price)
+                            logger.info(f'starting sell place_order with :{symbol} | {pairing} | {float(volume)*float(last_price)} | side=sell {last_price}')
+                            sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
                             logger.info("Finish sell place_order")
 
-                        logger.info(f"sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL")
+                        logger.info(f'sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL')
 
                         # remove order from json file
                         order.pop(coin)
@@ -136,6 +136,9 @@ def main():
                     else:
                         if not test_mode:
                             sold_coins[coin] = sell
+                            sold_coins[coin] = sell.__dict__
+                            sold_coins[coin].pop("local_vars_configuration")
+
                             store_order('sold.json', sold_coins)
                             logger.info('Order saved in sold.json')
                         else:
