@@ -41,6 +41,7 @@ else:
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
 global supported_currencies
+
 logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
@@ -62,7 +63,7 @@ def main():
     test_mode = config['TRADE_OPTIONS']['TEST']
 
     if not test_mode:
-         logger.info(f'!!! LIVE MODE !!!')
+        logger.info(f'!!! LIVE MODE !!!')
 
     t = threading.Thread(target=search_and_update)
     t.start()
@@ -79,6 +80,7 @@ def main():
                 # store some necessary trade info for a sell
                 coin_tp = order[coin]['tp']
                 coin_sl = order[coin]['sl']
+                
                 if not test_mode:
                     volume = order[coin]['_amount']
                     stored_price = float(order[coin]['_price'])
@@ -87,24 +89,19 @@ def main():
                     volume = order[coin]['volume']
                     stored_price = float(order[coin]['price'])
                     symbol = order[coin]['symbol']
-
-
-				logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
-
+                
                 top_position_price = stored_price + (stored_price*coin_tp /100)
 
-				logger.info(f'get_last_price existing coin: {coin}')
+                #logger.info(f"Data for sell: {coin=},  {stored_price=}, {coin_tp=}, {coin_sl=}, {volume=}, {symbol=}")
+				
+                #logger.info(f"get_last_price existing coin: {coin}")
                 last_price = get_last_price(symbol, pairing)
-				logger.info("Finished get_last_price")
+                #logger.info("Finished get_last_price")
 
                 stop_loss_price = stored_price + (stored_price*coin_sl /100)
 
                 logger.info(f'{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
                 logger.info(f'{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
-
-                logger.info("Finished get_last_price")
-                logger.info(f'{last_price=}')
-                logger.info(f'{stored_price + (stored_price*sl /100)=}')
 
                 # update stop loss and take profit values if threshold is reached
                 if float(last_price) > stored_price + (
@@ -254,8 +251,8 @@ def main():
                                   'listed on gate io')
             else:
                 get_all_currencies()
-        else:
-            logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
+        #else:
+        #    logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
         time.sleep(3)
         # except Exception as e:
