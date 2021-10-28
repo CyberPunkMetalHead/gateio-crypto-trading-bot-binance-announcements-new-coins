@@ -88,6 +88,7 @@ def main():
                     stored_price = float(order[coin]['price'])
                     symbol = order[coin]['symbol']
 
+
 				logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
 
                 top_position_price = stored_price + (stored_price*coin_tp /100)
@@ -135,9 +136,8 @@ def main():
                     try:
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            logger.info(f"starting sell place_order with : ,{symbol =}, {pairing =}, {(volume*99.5/100) =}, sell, {last_price =}")
-							sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
-
+                            logger.info(f'starting sell place_order with :{symbol} | {pairing} | {float(volume)*float(last_price)} | side=sell {last_price}')
+                            sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
                             logger.info("Finish sell place_order")
 
                         logger.info(f'sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL')
@@ -235,13 +235,12 @@ def main():
                             order[announcement_coin].pop("local_vars_configuration")
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
-                            logger.info("Finished buy place_order")
+                            logger.info('Finished buy place_order')
 
                     except Exception as e:
                         logger.error(e)
 
                     else:
-                        
                         message = f'Order created with {qty} on {announcement_coin} at a price of {price} each'
                         logger.info(message)
                         send_sms_message(message)

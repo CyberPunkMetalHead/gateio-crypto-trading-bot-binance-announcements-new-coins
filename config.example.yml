@@ -4,9 +4,6 @@
     QUANTITY: 15
     # BTCUSDT will be bought for example
     PAIRING: USDT
-    # How often to check for posts and run the script
-    # in minutes
-    RUN_EVERY: 0.025
     TEST: True
     # In %
     SL: -3

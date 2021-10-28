@@ -25,24 +25,18 @@ def get_last_coin():
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
     latest_announcement = latest_announcement['data']['articles'][0]['title']
-
     found_coin = re.findall('\(([^)]+)', latest_announcement)
-
     uppers = None
-
-
-
-    exclusions = ['Futures', 'Margin', 'adds', 'Adds']
-    for item in exclusions:
-        if item in latest_announcement:
-            return None
-        else:
-            if len(found_coin) == 1:
-                uppers = found_coin[0]
-                logger.info('New coin detected: ' + uppers)
-            if len(found_coin) != 1:
-                uppers = None
-
+    
+    if 'Will List' not in latest_announcement:
+        return None
+    else:
+        if len(found_coin) == 1:
+            uppers = found_coin[0]
+            logger.info('New coin detected: ' + uppers)
+        if len(found_coin) != 1:
+            uppers = None
+    print(f'{uppers=}')
     return uppers
 
 
@@ -75,16 +69,20 @@ def search_and_update():
     count = 57
 
     while True:
-        latest_coin = get_last_coin()
-        if latest_coin:
-            store_new_listing(latest_coin)
-
-        count = count + 3
-        if count % 60 == 0:
-            logger.info("One minute has passed.  Checking for coin announcements every 3 seconds (in a separate thread)")
-            count = 0
-
         time.sleep(3)
+        try:
+            latest_coin = get_last_coin()
+            if latest_coin:
+                store_new_listing(latest_coin)
+            
+            count = count + 3
+            if count % 60 == 0:
+                logger.info("One minute has passed.  Checking for coin announcements every 3 seconds (in a separate thread)")
+                count = 0
+        except Exception as e:
+            logger.info(e)
+    else:
+        logger.info("while True loop in search_and_update has stopped.")
 
 
 def get_all_currencies(single=False):
