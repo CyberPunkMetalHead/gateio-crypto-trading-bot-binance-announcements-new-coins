@@ -14,7 +14,7 @@ from json import JSONEncoder
 
 import os.path
 
-old_coins = ["CHESS","OTHERCRAP"]
+old_coins = ["OTHERCRAP"]
 
 # loads local configuration
 config = load_config('config.yml')
@@ -41,12 +41,6 @@ global supported_currencies
 logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
-
-
-# subclass JSONEncoder
-class orderEncoder(JSONEncoder):
-        def default(self, o):
-            return o.__dict__
 
 
 def main():
@@ -76,12 +70,17 @@ def main():
         if len(order) > 0:
             for coin in list(order):
                 # store some necessary trade info for a sell
-                stored_price = float(order[coin]['price'])
-                print(stored_price)
                 coin_tp = order[coin]['tp']
                 coin_sl = order[coin]['sl']
-                volume = order[coin]['volume']
-                symbol = order[coin]['symbol']
+                if not test_mode:
+                    volume = order[coin]['_amount']
+                    stored_price = float(order[coin]['_price'])
+                    symbol = order[coin]['_fee_currency']
+                else:
+                    volume = order[coin]['volume']
+                    stored_price = float(order[coin]['price'])
+                    symbol = order[coin]['symbol']
+
                 logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
 
                 logger.info(f'get_last_price existing coin: {coin}')
@@ -210,6 +209,8 @@ def main():
                         else:
                             logger.info(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {qty=} | side = buy | {price=}')
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
+                            order[announcement_coin] = order[announcement_coin].__dict__
+                            order[announcement_coin].pop("local_vars_configuration")
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
                             logger.info('Finished buy place_order')

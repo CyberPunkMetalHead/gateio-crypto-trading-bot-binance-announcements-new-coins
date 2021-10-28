@@ -25,24 +25,18 @@ def get_last_coin():
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
     latest_announcement = latest_announcement['data']['articles'][0]['title']
-
     found_coin = re.findall('\(([^)]+)', latest_announcement)
-
     uppers = None
 
-
-
-    exclusions = ['Futures', 'Margin', 'adds', 'Adds']
-    for item in exclusions:
-        if item in latest_announcement:
-            return None
-        else:
-            if len(found_coin) == 1:
-                uppers = found_coin[0]
-                logger.info('New coin detected: ' + uppers)
-            if len(found_coin) != 1:
-                uppers = None
-
+    if 'Will List' not in latest_announcement:
+        return None
+    else:
+        if len(found_coin) == 1:
+            uppers = found_coin[0]
+            logger.info('New coin detected: ' + uppers)
+        if len(found_coin) != 1:
+            uppers = None
+    print(f'{uppers=}')
     return uppers
 
 
