@@ -53,10 +53,9 @@ def store_new_listing(listing):
 
     if os.path.isfile('new_listing.json'):
         file = load_order('new_listing.json')
-        if listing in file:
+        if set(listing) == set(file):
             return file
         else:
-            file = listing
             store_order('new_listing.json', file)
             logger.info("New listing detected, updating file")
             return file
