@@ -61,9 +61,12 @@ def main():
     pairing = config['TRADE_OPTIONS']['PAIRING']
     qty = config['TRADE_OPTIONS']['QUANTITY']
     test_mode = config['TRADE_OPTIONS']['TEST']
+    enable_sms = config['TRADE_OPTIONS']['ENABLE_SMS']
 
     if not test_mode:
         logger.info(f'!!! LIVE MODE !!!')
+        if(enable_sms):
+            logger.info('!!! SMS Enabled on Buy/Sell !!!')
 
     t = threading.Thread(target=search_and_update, args=[pairing,])
     t.start()
@@ -140,7 +143,7 @@ def main():
                         sold_message = f'sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL'
                         logger.info(sold_message)
 
-                        if not test_mode:
+                        if not test_mode and enable_sms:
                             send_sms_message(sold_message)
 
                         # remove order from json file
@@ -253,7 +256,7 @@ def main():
                         message = f'Order created with {qty} on {announcement_coin} at a price of {price} each'
                         logger.info(message)
                         
-                        if not test_mode:
+                        if not test_mode and enable_sms:
                             send_sms_message(message)
 
                         store_order('order.json', order)
