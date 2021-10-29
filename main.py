@@ -17,7 +17,7 @@ from json import JSONEncoder
 import os.path
 import sys, os
 
-old_coins = ["CHESS", "OTHERCRAP"]
+old_coins = ["ADX", "AUCTION", "CHESS", "OTHERCRAP"]
 
 # loads local configuration
 config = load_config('config.yml')
@@ -100,8 +100,8 @@ def main():
 
                 stop_loss_price = stored_price + (stored_price*coin_sl /100)
 
-                logger.info(f'{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
-                logger.info(f'{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
+                logger.info(f'{symbol=}-{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
+                logger.info(f'{symbol=}-{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
 
                 # update stop loss and take profit values if threshold is reached
                 if float(last_price) > stored_price + (
