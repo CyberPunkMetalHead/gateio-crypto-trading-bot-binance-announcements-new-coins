@@ -189,6 +189,14 @@ def main():
         # announcement_coin = load_order('new_listing.json')
         if os.path.isfile('new_listing.json'):
             announcement_coin = load_order('new_listing.json')
+            if(len(announcement_coin) != 1):
+                if(len(order) > 0):
+                    announcement_coin = [c for c in announcement_coin if c not in order]
+                
+                if(len(announcement_coin) > 0):
+                    announcement_coin = announcement_coin[0]
+                else:
+                    announcement_coin = False
         else:
             announcement_coin = False
 
