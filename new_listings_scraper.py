@@ -2,7 +2,6 @@ import ast
 import os.path
 import re
 import time
-import re
 
 import requests
 from gate_api import ApiClient, SpotApi
@@ -61,7 +60,7 @@ def store_new_listing(listing):
         return new_listing
 
 
-def search_and_update():
+def search_and_update(pairing):
     """
     Pretty much our main func
     """

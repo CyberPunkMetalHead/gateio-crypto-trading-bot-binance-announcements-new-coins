@@ -65,7 +65,7 @@ def main():
     if not test_mode:
         logger.info(f'!!! LIVE MODE !!!')
 
-    t = threading.Thread(target=search_and_update)
+    t = threading.Thread(target=search_and_update, args=[pairing,])
     t.start()
 
     t2 = threading.Thread(target=get_all_currencies)
