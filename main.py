@@ -17,7 +17,7 @@ from json import JSONEncoder
 import os.path
 import sys, os
 
-old_coins = ["CHESS", "OTHERCRAP"]
+old_coins = ["ADX", "AUCTION", "CHESS", "OTHERCRAP"]
 
 # loads local configuration
 config = load_config('config.yml')
@@ -61,11 +61,14 @@ def main():
     pairing = config['TRADE_OPTIONS']['PAIRING']
     qty = config['TRADE_OPTIONS']['QUANTITY']
     test_mode = config['TRADE_OPTIONS']['TEST']
+    enable_sms = config['TRADE_OPTIONS']['ENABLE_SMS']
 
     if not test_mode:
         logger.info(f'!!! LIVE MODE !!!')
+        if(enable_sms):
+            logger.info('!!! SMS Enabled on Buy/Sell !!!')
 
-    t = threading.Thread(target=search_and_update)
+    t = threading.Thread(target=search_and_update, args=[pairing,])
     t.start()
 
     t2 = threading.Thread(target=get_all_currencies)
@@ -100,8 +103,8 @@ def main():
 
                 stop_loss_price = stored_price + (stored_price*coin_sl /100)
 
-                logger.info(f'{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
-                logger.info(f'{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
+                logger.info(f'{symbol=}-{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
+                logger.info(f'{symbol=}-{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
 
                 # update stop loss and take profit values if threshold is reached
                 if float(last_price) > stored_price + (
@@ -140,7 +143,7 @@ def main():
                         sold_message = f'sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL'
                         logger.info(sold_message)
 
-                        if not test_mode:
+                        if not test_mode and enable_sms:
                             send_sms_message(sold_message)
 
                         # remove order from json file
@@ -189,6 +192,14 @@ def main():
         # announcement_coin = load_order('new_listing.json')
         if os.path.isfile('new_listing.json'):
             announcement_coin = load_order('new_listing.json')
+            if(len(announcement_coin) != 1):
+                if(len(order) > 0):
+                    announcement_coin = [c for c in announcement_coin if c not in order]
+                
+                if(len(announcement_coin) > 0):
+                    announcement_coin = announcement_coin[0]
+                else:
+                    announcement_coin = False
         else:
             announcement_coin = False
 
@@ -245,7 +256,7 @@ def main():
                         message = f'Order created with {qty} on {announcement_coin} at a price of {price} each'
                         logger.info(message)
                         
-                        if not test_mode:
+                        if not test_mode and enable_sms:
                             send_sms_message(message)
 
                         store_order('order.json', order)
