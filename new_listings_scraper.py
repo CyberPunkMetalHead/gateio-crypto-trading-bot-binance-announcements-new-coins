@@ -15,28 +15,35 @@ spot_api = SpotApi(ApiClient(client))
 
 global supported_currencies
 
-def get_last_coin():
+def get_coins(pairing, page_num):
     """
-    Scrapes new listings page for and returns new Symbol when appropriate
+    Scrapes new listings page for and returns new Symbols when appropriate
     """
-    logger.debug("Pulling announcement page")
-    latest_announcement = requests.get("https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?catalogId=48&pageNo=1&pageSize=15&rnd=" + str(time.time()))
+    latest_announcement = requests.get(f"https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?catalogId=48&pageNo={page_num}&pageSize=1&rnd={str(time.time())}")
     latest_announcement = latest_announcement.json()
-    logger.debug("Finished pulling announcement page")
     latest_announcement = latest_announcement['data']['articles'][0]['title']
-    found_coin = re.findall('\(([^)]+)', latest_announcement)
-    uppers = None
+
+    if "adds" in latest_announcement.lower() and "trading pairs" in latest_announcement.lower() and pairing in latest_announcement:
+        found_pairs = re.findall(r'[A-Z]{1,10}[/][A-Z]*', latest_announcement)
+        found_coins = [i.replace(f'/{pairing}', "") for i in found_pairs if i.find(pairing) != -1]
+        return found_coins
+    elif "will list" in latest_announcement.lower():
+        found_coins = re.findall('\(([^)]+)', latest_announcement)
+        if(len(found_coins) > 0):
+            return found_coins
     
-    if 'Will List' not in latest_announcement:
-        return None
-    else:
-        if len(found_coin) == 1:
-            uppers = found_coin[0]
-            logger.info('New coin detected: ' + uppers)
-        if len(found_coin) != 1:
-            uppers = None
-    print(f'{uppers=}')
-    return uppers
+    return None
+
+
+def get_last_coin(pairing):
+    logger.debug("Pulling announcement page for [adds + trading pairs] or [will list] scenarios")
+
+    found_coins = get_coins(pairing, 1)
+    
+    if len(found_coins) > 0:
+        return found_coins
+    
+    return None
 
 
 def store_new_listing(listing):
@@ -70,9 +77,9 @@ def search_and_update(pairing):
     while True:
         time.sleep(3)
         try:
-            latest_coin = get_last_coin()
-            if latest_coin:
-                store_new_listing(latest_coin)
+            latest_coins = get_last_coin(pairing)
+            if len(latest_coins) > 0:
+                store_new_listing(latest_coins)
             
             count = count + 3
             if count % 60 == 0:
