@@ -38,13 +38,26 @@ if os.path.isfile('new_listing.json'):
 else:
     announcement_coin = False
 
+
+
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
 global supported_currencies
 
+
 logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
+
+
+global new_listings
+
+# load necessary files
+if os.path.isfile('newly_listed.json'):
+    newly_listed = get_new_listings('newly_listed.json')
+    new_listings = [c for c in list(newly_listed) if c not in order and c not in sold_coins]
+else:
+    new_listings = {}
 
 
 def main():
@@ -68,11 +81,11 @@ def main():
         if(enable_sms):
             logger.info('!!! SMS Enabled on Buy/Sell !!!')
 
-    t = threading.Thread(target=search_and_update, args=[pairing,])
+    t = threading.Thread(target=search_and_update, daemon=True, args=[pairing, new_listings])
     t.start()
 
-    t2 = threading.Thread(target=get_all_currencies)
-    t2.start()
+    #t2 = threading.Thread(target=get_all_currencies, daemon=True)
+    #t2.start()
 
     while True:
         # check if the order file exists and load the current orders
@@ -93,6 +106,9 @@ def main():
                     stored_price = float(order[coin]['price'])
                     symbol = order[coin]['symbol']
                 
+                if float(stored_price) == 0:
+                    continue #avoid div by zero error
+
                 top_position_price = stored_price + (stored_price*coin_tp /100)
 
                 #logger.info(f"Data for sell: {coin=},  {stored_price=}, {coin_tp=}, {coin_sl=}, {volume=}, {symbol=}")
@@ -105,6 +121,9 @@ def main():
 
                 logger.info(f'{symbol=}-{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
                 logger.info(f'{symbol=}-{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
+
+                if float(last_price) == 0:
+                    continue # need positive price / do not place buy order 
 
                 # update stop loss and take profit values if threshold is reached
                 if float(last_price) > stored_price + (
@@ -126,8 +145,8 @@ def main():
                     new_top_position_price = stored_price + (stored_price*new_tp /100)
                     new_stop_loss_price = stored_price + (stored_price*new_sl /100)
 
-                    logger.info(f'updated tp: {round(new_tp, 3)}% / ${"{:,.2f}".format(new_top_position_price)}')
-                    logger.info(f'updated sl: {round(new_sl, 3)}% / ${"{:,.2f}".format(new_stop_loss_price)}')
+                    logger.info(f'updated tp: {round(new_tp, 3)}% / ${"{:,.3f}".format(new_top_position_price)}')
+                    logger.info(f'updated sl: {round(new_sl, 3)}% / ${"{:,.3f}".format(new_stop_loss_price)}')
 
                 # close trade if tsl is reached or trail option is not enabled
                 elif float(last_price) < stored_price + (
@@ -192,14 +211,19 @@ def main():
         # announcement_coin = load_order('new_listing.json')
         if os.path.isfile('new_listing.json'):
             announcement_coin = load_order('new_listing.json')
-            if(len(announcement_coin) != 1):
+            if(len(announcement_coin) > 0):
                 if(len(order) > 0):
                     announcement_coin = [c for c in announcement_coin if c not in order]
+                
+                if(len(announcement_coin) > 0):
+                    announcement_coin = [c for c in announcement_coin if c not in old_coins and c not in sold_coins]
                 
                 if(len(announcement_coin) > 0):
                     announcement_coin = announcement_coin[0]
                 else:
                     announcement_coin = False
+            else:
+                announcement_coin = False
         else:
             announcement_coin = False
 
