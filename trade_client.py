@@ -45,6 +45,20 @@ def place_order(base,quote, amount, side, last_price):
     try:
         order = Order(amount=str(float(amount)/float(last_price)), price=last_price, side=side, currency_pair=f'{base}_{quote}')
         order = spot_api.create_order(order)
+        logger.info(f"spot_api place order returned {order}")
+    except Exception as e:
+        logger.error(e)
+        raise
+
+    else:
+        return order
+
+        
+def cancel_open_order(id, base, quote):
+    
+    try:
+        order = spot_api.cancel_order(id, currency_pair=f'{base}_{quote}')
+        logger.info(f"spot_api cancel orders returned {order}")
     except Exception as e:
         logger.error(e)
         raise

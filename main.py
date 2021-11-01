@@ -75,6 +75,9 @@ def main():
     qty = config['TRADE_OPTIONS']['QUANTITY']
     test_mode = config['TRADE_OPTIONS']['TEST']
     enable_sms = config['TRADE_OPTIONS']['ENABLE_SMS']
+    
+    start_order_price = 0
+    max_slippage = 1
 
     if not test_mode:
         logger.info(f'!!! LIVE MODE !!!')
@@ -158,7 +161,6 @@ def main():
 
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            
                             sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
                             logger.info("Finish sell place_order")
 
@@ -246,7 +248,10 @@ def main():
                     logger.debug('Finished get_last_price')
 
                     if float(price) == 0:
-                        continue
+                        continue # wait for positive price
+                    
+                    if start_order_price == 0:
+                        start_order_price = float(price) # store first found price
 
                     logger.info(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {qty=} | side = buy | {price=}')
 
@@ -275,7 +280,6 @@ def main():
                             logger.info(order[announcement_coin])
                         # place a live order if False
                         else:
-                            
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin] = order[announcement_coin].__dict__
                             order[announcement_coin].pop("local_vars_configuration")
@@ -287,16 +291,31 @@ def main():
                         logger.error(e)
 
                     else:
-                        message = f'Order created with {qty} on {announcement_coin} at a price of {price} each'
+                        if test_mode:
+                            order_status = order[announcement_coin]['status']
+                        else:
+                            order_status = order[announcement_coin]['_status']
+
+                        message = f'Order created on {announcement_coin} at a price of {price} each.  {order_status=}'
                         logger.info(message)
                         
-                        store_order('order.json', order)
 
-                        if not test_mode and enable_sms:
-                            try:
-                                send_sms_message(message)
-                            except Exception:
-                                pass
+                        if order_status == 'filled' or order_status == "closed":
+                            store_order('order.json', order)
+
+                            if not test_mode and enable_sms:
+                                try:
+                                    send_sms_message(message)
+                                except Exception:
+                                    pass
+                        elif order_status == 'open':
+                            if not test_mode:
+                                # cancel orders and try again in the next iteration
+                                cancel_open_order(order[announcement_coin]['_id'], announcement_coin, pairing)
+                            
+                            order.clear()  # reset for next iteration
+                            logger.info(f"Reset order.  Waiting for status of 'filled/closed' for {announcement_coin}")
+                        
                         
                 else:
                     logger.warning(f'{announcement_coin=} is not supported on gate io')
@@ -308,7 +327,10 @@ def main():
         #else:
         #    logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
-        time.sleep(3)
+        if start_order_price > 0:
+            time.sleep(1)
+        else:
+            time.sleep(3)
         # except Exception as e:
         # print(e)
 
