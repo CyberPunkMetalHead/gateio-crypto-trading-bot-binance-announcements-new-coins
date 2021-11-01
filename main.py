@@ -162,13 +162,17 @@ def main():
                         sold_message = f'sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL'
                         logger.info(sold_message)
 
-                        if not test_mode and enable_sms:
-                            send_sms_message(sold_message)
-
                         # remove order from json file
                         order.pop(coin)
                         store_order('order.json', order)
                         logger.debug('Order saved in order.json')
+
+                        if not test_mode and enable_sms:
+                            try:
+                                send_sms_message(sold_message)
+                            except Exception:
+                                pass
+                                
 
                     except Exception as e:
                         logger.error(e)
@@ -280,10 +284,13 @@ def main():
                         message = f'Order created with {qty} on {announcement_coin} at a price of {price} each'
                         logger.info(message)
                         
-                        if not test_mode and enable_sms:
-                            send_sms_message(message)
-
                         store_order('order.json', order)
+
+                        if not test_mode and enable_sms:
+                            try:
+                                send_sms_message(message)
+                            except Exception:
+                                pass
                         
                 else:
                     logger.warning(f'{announcement_coin=} is not supported on gate io')
