@@ -153,9 +153,12 @@ def main():
                         stored_price * coin_sl / 100) or float(last_price) > stored_price + (
                         stored_price * coin_tp / 100) and not enable_tsl:
                     try:
+
+                        logger.info(f'starting sell place_order with :{symbol} | {pairing} | {float(volume)*float(last_price)} | side=sell {last_price}')                        
+
                         # sell for real if test mode is set to false
                         if not test_mode:
-                            logger.info(f'starting sell place_order with :{symbol} | {pairing} | {float(volume)*float(last_price)} | side=sell {last_price}')
+                            
                             sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
                             logger.info("Finish sell place_order")
 
@@ -234,15 +237,18 @@ def main():
         global supported_currencies
 
         if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
-            logger.info(f'New annoucement detected: {announcement_coin}')
+            logger.debug(f'New annoucement detected: {announcement_coin}')
 
             if supported_currencies is not False:
                 if announcement_coin in supported_currencies:
                     logger.debug("Starting get_last_price")
                     price = get_last_price(announcement_coin, pairing)
-
-                    logger.debug(f"Coin price: { price}")
                     logger.debug('Finished get_last_price')
+
+                    if float(price) == 0:
+                        continue
+
+                    logger.info(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {qty=} | side = buy | {price=}')
 
                     try:
                         # Run a test trade if true
@@ -269,7 +275,7 @@ def main():
                             logger.info(order[announcement_coin])
                         # place a live order if False
                         else:
-                            logger.info(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {qty=} | side = buy | {price=}')
+                            
                             order[announcement_coin] = place_order(announcement_coin, pairing, qty,'buy', price)
                             order[announcement_coin] = order[announcement_coin].__dict__
                             order[announcement_coin].pop("local_vars_configuration")
