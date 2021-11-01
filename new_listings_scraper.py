@@ -23,7 +23,7 @@ def get_coins(pairing, page_num):
     latest_announcement = latest_announcement.json()
     latest_announcement = latest_announcement['data']['articles'][0]['title']
 
-    if "adds" in latest_announcement.lower() and "trading pairs" in latest_announcement.lower() and pairing in latest_announcement:
+    if "adds" in latest_announcement.lower() and "trading pair" in latest_announcement.lower() and pairing in latest_announcement:
         found_pairs = re.findall(r'[A-Z]{1,10}[/][A-Z]*', latest_announcement)
         found_coins = [i.replace(f'/{pairing}', "") for i in found_pairs if i.find(pairing) != -1]
         return found_coins
