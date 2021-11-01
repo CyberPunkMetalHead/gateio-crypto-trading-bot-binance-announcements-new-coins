@@ -104,7 +104,7 @@ def search_and_update(pairing, new_listings):
                 last_price = get_last_price(latest_coins[0], pairing)
                 if len(last_price) > 0 and float(last_price) > 0:
 
-                    logger.info(f"Found new coin {latest_coins[0]} !! Adding to new listings.")
+                    logger.info(f"Found new coin {latest_coins[0]} with price of {last_price}!! Adding to new listings.")
                    
                     # store as announcement coin for main thread to pick up (It's go time!!!)
                     store_new_listing(latest_coins)
