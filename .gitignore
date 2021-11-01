@@ -6,6 +6,7 @@ auth/auth_twilio.yml
 order.json
 sold.json
 new_listing.json
+newly_listed.json
 
 # Ignore bot log
 bot.log
