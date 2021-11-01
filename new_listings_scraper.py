@@ -32,7 +32,7 @@ def get_coins(pairing, page_num):
         if(len(found_coins) > 0):
             return found_coins
     
-    return None
+    return False
 
 
 def get_last_coin(pairing):
@@ -40,10 +40,10 @@ def get_last_coin(pairing):
 
     found_coins = get_coins(pairing, 1)
     
-    if len(found_coins) > 0:
+    if found_coins and len(found_coins) > 0:
         return found_coins
     
-    return None
+    return False
 
 
 def store_new_listing(listing):
@@ -56,7 +56,8 @@ def store_new_listing(listing):
         if set(listing) == set(file):
             return file
         else:
-            store_order('new_listing.json', file)
+            joined = file + listing
+            store_order('new_listing.json', joined)
             logger.info("New listing detected, updating file")
             return file
     else:
@@ -77,7 +78,7 @@ def search_and_update(pairing):
         time.sleep(3)
         try:
             latest_coins = get_last_coin(pairing)
-            if len(latest_coins) > 0:
+            if latest_coins and len(latest_coins) > 0:
                 store_new_listing(latest_coins)
             
             count = count + 3
