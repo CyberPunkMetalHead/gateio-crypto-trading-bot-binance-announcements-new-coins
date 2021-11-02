@@ -327,10 +327,7 @@ def main():
         #else:
         #    logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
-        if start_order_price > 0:
-            time.sleep(1)
-        else:
-            time.sleep(3)
+        time.sleep(3)
         # except Exception as e:
         # print(e)
 
