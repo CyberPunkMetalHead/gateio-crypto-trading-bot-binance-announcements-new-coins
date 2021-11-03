@@ -37,7 +37,7 @@ def get_coins(pairing, new_listings):
         if(len(found_coins) > 0):
             return found_coins
     
-    return None
+    return False
 
 
 def get_last_coin(pairing, new_listings):
@@ -45,10 +45,10 @@ def get_last_coin(pairing, new_listings):
 
     found_coins = get_coins(pairing, new_listings)
     
-    if len(found_coins) > 0:
+    if found_coins and len(found_coins) > 0:
         return found_coins
     
-    return None
+    return False
 
 
 def get_new_listings(file):
@@ -94,37 +94,33 @@ def search_and_update(pairing, new_listings):
     """
     Pretty much our main func
     """
-
     count = 57
     while True:
+        
+        latest_coins = get_last_coin(pairing, new_listings)
+        if latest_coins:
+            try:
+                ready = is_currency_trade_ready(latest_coins[0], pairing)
+                if ready:
+                        logger.info(f"Found new 'tradable' coin {latest_coins[0]}!! Adding to new listings.")
+                    
+                        # store as announcement coin for main thread to pick up (It's go time!!!)
+                        store_new_listing(latest_coins)
+
+                        # remove from list of coins to be listed
+                        new_listings.pop(0)
+                
+                count = count + 3
+                if count % 60 == 0:
+                    logger.info("One minute has passed.  Checking for coin announcements every 3 seconds (in a separate thread)")
+                    count = 0
+            except GateApiException as e:
+                if e.label != "INVALID_CURRENCY":
+                    logger.error(e)
+            except Exception as e:
+                logger.info(e)
+
         time.sleep(3)
-        try:
-            latest_coins = get_last_coin(pairing, new_listings)
-            if len(latest_coins) > 0:
-                last_price = get_last_price(latest_coins[0], pairing)
-                if len(last_price) > 0 and float(last_price) > 0:
-
-                    logger.info(f"Found new coin {latest_coins[0]} with price of {last_price}!! Adding to new listings.")
-                   
-                    # store as announcement coin for main thread to pick up (It's go time!!!)
-                    store_new_listing(latest_coins)
-
-                    # remove from list of coins to be listed
-                    new_listings.pop(0)
-                    logger.info(f'Removing the search for {latest_coins[0]} from the searching thread')
-            
-            count = count + 3
-            if count % 60 == 0:
-                logger.info("One minute has passed.  Checking for coin announcements every 3 seconds (in a separate thread)")
-                count = 0
-        except GateApiException as e:
-            if e.label != "INVALID_CURRENCY":
-                logger.error(e)
-            else:
-                logger.info("Gate.io return INVALID_CURRENCY when trying to get latest price. Keep trying.")
-        except Exception as e:
-            logger.info(e)
-
 
 def get_all_currencies(single=False):
     """
@@ -146,3 +142,5 @@ def get_all_currencies(single=False):
             return supported_currencies
         else:
             time.sleep(300)
+
+      
