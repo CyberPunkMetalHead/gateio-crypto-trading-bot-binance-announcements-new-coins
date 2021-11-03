@@ -76,15 +76,14 @@ def main():
     test_mode = config['TRADE_OPTIONS']['TEST']
     enable_sms = config['TRADE_OPTIONS']['ENABLE_SMS']
     
-    start_order_price = 0
-    max_slippage = 1
-
+    max_qty = qty
+    
     if not test_mode:
         logger.info(f'!!! LIVE MODE !!!')
         if(enable_sms):
             logger.info('!!! SMS Enabled on Buy/Sell !!!')
 
-    t = threading.Thread(target=search_and_update, daemon=True, args=[pairing, new_listings])
+    t = threading.Thread(target=search_and_update, args=[pairing, new_listings])
     t.start()
 
     #t2 = threading.Thread(target=get_all_currencies, daemon=True)
@@ -100,15 +99,10 @@ def main():
                 coin_tp = order[coin]['tp']
                 coin_sl = order[coin]['sl']
                 
-                if not test_mode:
-                    volume = order[coin]['_amount']
-                    stored_price = float(order[coin]['_price'])
-                    symbol = order[coin]['_fee_currency']
-                else:
-                    volume = order[coin]['volume']
-                    stored_price = float(order[coin]['price'])
-                    symbol = order[coin]['symbol']
-                
+                volume = order[coin]['_amount']
+                stored_price = float(order[coin]['_price'])
+                symbol = order[coin]['_fee_currency']
+
                 if float(stored_price) == 0:
                     continue #avoid div by zero error
 
@@ -117,7 +111,8 @@ def main():
                 #logger.info(f"Data for sell: {coin=},  {stored_price=}, {coin_tp=}, {coin_sl=}, {volume=}, {symbol=}")
 				
                 #logger.info(f"get_last_price existing coin: {coin}")
-                last_price = get_last_price(symbol, pairing)
+                obj = get_last_price(symbol, pairing)
+                last_price = obj.last
                 #logger.info("Finished get_last_price")
 
                 stop_loss_price = stored_price + (stored_price*coin_sl /100)
@@ -210,7 +205,8 @@ def main():
                                 'account': 'spot',
                                 'side': 'sell',
                                 'iceberg': '0',
-                                'price': last_price}
+                                'price': last_price
+                                }
                             
                             logger.info(f'Sold coins:\r\n {sold_coins[coin]}')
 
@@ -243,38 +239,56 @@ def main():
 
             if supported_currencies is not False:
                 if announcement_coin in supported_currencies:
-                    logger.debug("Starting get_last_price")
-                    price = get_last_price(announcement_coin, pairing)
-                    logger.debug('Finished get_last_price')
+                    
+                    # get latest price object
+                    obj = get_last_price(announcement_coin, pairing)
+                    price = obj.last
 
                     if float(price) == 0:
                         continue # wait for positive price
-                    
-                    if start_order_price == 0:
-                        start_order_price = float(price) # store first found price
 
+                    if float(qty) == 0:
+                        old_coins.append(announcement_coin)
+                        continue # hit our order total
+                    
                     logger.info(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {qty=} | side = buy | {price=}')
 
                     try:
                         # Run a test trade if true
                         if config['TRADE_OPTIONS']['TEST']:
+                            
+                            left = 0
+                            if max_qty == qty:
+                                left = float(qty) / 2
+                                
+
                             order[announcement_coin] = {
                                 'symbol': announcement_coin,
+                                '_fee_currency': announcement_coin,
                                 'price': price,
-                                'volume': qty,
+                                '_price': price,
+                                '_amount': qty,
                                 'time': datetime.timestamp(datetime.now()),
                                 'tp': tp,
                                 'sl': sl,
                                 'id': 'test-order',
+                                '_id': 'test-order',
                                 'text': 'test-order',
                                 'create_time': datetime.timestamp(datetime.now()),
                                 'update_time': datetime.timestamp(datetime.now()),
                                 'currency_pair': f'{announcement_coin}_{pairing}',
                                 'status': 'filled',
+                                '_status': 'filled',
                                 'type': 'limit',
+                                '_type': 'limit',
                                 'account': 'spot',
+                                '_account': 'spot',
                                 'side': 'buy',
-                                'iceberg': '0'
+                                '_side': 'buy',
+                                'iceberg': '0',
+                                'left': str(left),
+                                '_left': str(left),
+                                '_fee': str(float(volume) * .03)
                             }
                             logger.info('PLACING TEST ORDER')
                             logger.info(order[announcement_coin])
@@ -285,6 +299,7 @@ def main():
                             order[announcement_coin].pop("local_vars_configuration")
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
+                            order[announcement_coin]['symbol'] = announcement_coin
                             logger.info('Finished buy place_order')
 
                     except Exception as e:
@@ -301,21 +316,40 @@ def main():
                         
 
                         if order_status == 'filled' or order_status == "closed":
-                            store_order('order.json', order)
+                            if test_mode:
+                                # you can only sell what you have. Minus fees.  Look for unfulfilled
+                                newAmount = float(order[announcement_coin]['_amount']) - float(order[announcement_coin]['_left']) - float(order[announcement_coin]['_fee'])
+                                order[announcement_coin]['volume'] = newAmount
+                                left = order[announcement_coin]['left']
+                            else:
+                                obj = get_order(order[announcement_coin]['_id'], announcement_coin, pairing)
 
+                                # store completed order                                
+                                filled = {}
+                                filled[announcement_coin] = obj.__dict__
+                                filled[announcement_coin].pop("local_vars_configuration")
+                                store_order('order_fulfilled.json', filled)
+
+                                # you can only sell what you have. Minus fees.  Look for unfulfilled
+                                newAmount = float(obj._amount) - float(obj._left) - float(obj._fee)
+                                order[announcement_coin]['_amount'] = newAmount
+
+                            
+                            store_order('order.json', order)
+                            
                             if not test_mode and enable_sms:
                                 try:
                                     send_sms_message(message)
                                 except Exception:
                                     pass
-                        elif order_status == 'open':
-                            if not test_mode:
+                        elif order_status == 'open' or order_status == 'cancelled':
+                            if not test_mode and order_status == 'open':
                                 # cancel orders and try again in the next iteration
                                 cancel_open_order(order[announcement_coin]['_id'], announcement_coin, pairing)
+                                logger.info(f"Cancelled order {order[announcement_coin]['_id']} .  Waiting for status of 'filled/closed' for {announcement_coin}")
                             
                             order.clear()  # reset for next iteration
-                            logger.info(f"Reset order.  Waiting for status of 'filled/closed' for {announcement_coin}")
-                        
+                       
                         
                 else:
                     logger.warning(f'{announcement_coin=} is not supported on gate io')
@@ -327,10 +361,8 @@ def main():
         #else:
         #    logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
-        if start_order_price > 0:
-            time.sleep(1)
-        else:
-            time.sleep(3)
+
+        time.sleep(1)
         # except Exception as e:
         # print(e)
 

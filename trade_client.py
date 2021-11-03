@@ -4,8 +4,20 @@ from auth.gateio_auth import *
 from gate_api import ApiClient, Configuration, Order, SpotApi
 from gate_api.exceptions import ApiException, GateApiException
 
+from store_order import store_order
+
 client = load_gateio_creds('auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
+import json
+
+def is_currency_trade_ready(base, quote): 
+    try:
+        return True
+        cur = spot_api.get_currency_pair(currency_pair=f'{base}_{quote}')
+        assert cur and cur.trade_status == 'tradable'
+        return True
+    except GateApiException as e:
+        return False
 
 
 def get_last_price(base,quote):
@@ -13,15 +25,12 @@ def get_last_price(base,quote):
     Args:
     'DOT', 'USDT'
     """
-    try:
-        tickers = spot_api.list_tickers(currency_pair=f'{base}_{quote}')
-        assert len(tickers) == 1
-        return tickers[0].last
-    except GateApiException as e:
-        if e.label == "INVALID_CURRENCY":
-            return '0' #Not listed
-        else:
-            logger.error(e)
+    tickers = spot_api.list_tickers(currency_pair=f'{base}_{quote}')
+    assert len(tickers) == 1
+    t = tickers[0]
+    logger.info(f"{t.currency_pair} | last={t.last} | lowest_ask={t.lowest_ask} | change%={t.change_percentage} | base_volue={t.base_volume} | quote_volume={t.quote_volume}")
+    return t
+    
 
 
 def get_min_amount(base,quote):
@@ -45,7 +54,8 @@ def place_order(base,quote, amount, side, last_price):
     try:
         order = Order(amount=str(float(amount)/float(last_price)), price=last_price, side=side, currency_pair=f'{base}_{quote}')
         order = spot_api.create_order(order)
-        logger.info(f"spot_api place order returned {order}")
+        t = order
+        logger.info(f"BUY ORDER: {t.id=} | {t.account} | {t.type} | {t.side} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price}")
     except Exception as e:
         logger.error(e)
         raise
@@ -53,7 +63,12 @@ def place_order(base,quote, amount, side, last_price):
     else:
         return order
 
-        
+
+def get_order(id,base,quote):
+    t = spot_api.get_order(id, currency_pair=f'{base}_{quote}')
+    logger.info(f"GET ORDER: {id=} | {t.account} | {t.type} | {t.side} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price}")
+    return t
+
 def cancel_open_order(id, base, quote):
     
     try:
