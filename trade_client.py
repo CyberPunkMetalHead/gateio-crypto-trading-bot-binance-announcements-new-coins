@@ -12,12 +12,14 @@ import json
 
 def is_currency_trade_ready(base, quote): 
     try:
-        return True
         cur = spot_api.get_currency_pair(currency_pair=f'{base}_{quote}')
         assert cur and cur.trade_status == 'tradable'
         return True
-    except GateApiException as e:
-        return False
+    except Exception as e:
+        pass
+
+    return False
+
 
 
 def get_last_price(base,quote):
@@ -28,7 +30,7 @@ def get_last_price(base,quote):
     tickers = spot_api.list_tickers(currency_pair=f'{base}_{quote}')
     assert len(tickers) == 1
     t = tickers[0]
-    logger.info(f"{t.currency_pair} | last={t.last} | lowest_ask={t.lowest_ask} | change%={t.change_percentage} | base_volue={t.base_volume} | quote_volume={t.quote_volume}")
+    logger.info(f"GET PRICE: {t.currency_pair} | last={t.last} | lowest_ask={t.lowest_ask} | change%={t.change_percentage} | base_volue={t.base_volume} | quote_volume={t.quote_volume}")
     return t
     
 
@@ -73,7 +75,8 @@ def cancel_open_order(id, base, quote):
     
     try:
         order = spot_api.cancel_order(id, currency_pair=f'{base}_{quote}')
-        logger.info(f"spot_api cancel orders returned {order}")
+        t = order
+        logger.info(f"CANCEL ORDER: {t.id=} | {t.account} | {t.type} | {t.side} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price}")
     except Exception as e:
         logger.error(e)
         raise

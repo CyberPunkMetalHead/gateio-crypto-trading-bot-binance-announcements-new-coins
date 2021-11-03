@@ -16,18 +16,18 @@ spot_api = SpotApi(ApiClient(client))
 
 global supported_currencies
 
-def get_coins(pairing, new_listings):
-    """
-    Scrapes new listings page for and returns new Symbols when appropriate
-    """
+def get_last_coin(pairing):
+    logger.debug("Pulling announcement page")
+    latest_announcement = requests.get("https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?catalogId=48&pageNo=1&pageSize=15&rnd=" + str(time.time()))
+    latest_announcement = latest_announcement.json()
+    logger.debug("Finished pulling announcement page")
+    latest_announcement = latest_announcement['data']['articles'][0]['title']
+
+    return get_coins_by_accouncement_text(latest_announcement, pairing)
+
+
+def get_coins_by_accouncement_text(latest_announcement, pairing):
     
-    if len(new_listings) == 0:
-        return None
-    else:
-        symbol = new_listings[0]
-
-    latest_announcement = f"Will list ({symbol})"
-
     if "adds" in latest_announcement.lower() and "trading pairs" in latest_announcement.lower() and pairing in latest_announcement:
         found_pairs = re.findall(r'[A-Z]{1,10}[/][A-Z]*', latest_announcement)
         found_coins = [i.replace(f'/{pairing}', "") for i in found_pairs if i.find(pairing) != -1]
@@ -40,10 +40,16 @@ def get_coins(pairing, new_listings):
     return False
 
 
-def get_last_coin(pairing, new_listings):
+
+def get_new_listing_coin(pairing, new_listings):
     logger.debug("Pulling announcement page for [adds + trading pairs] or [will list] scenarios")
 
-    found_coins = get_coins(pairing, new_listings)
+    if len(new_listings) == 0:
+        return False
+    else:
+        symbol = new_listings[0]
+    
+    found_coins = get_coins_by_accouncement_text(f"Will list ({symbol})", pairing)    
     
     if found_coins and len(found_coins) > 0:
         return found_coins
@@ -90,14 +96,37 @@ def store_new_listing(listing):
         return new_listing
 
 
-def search_and_update(pairing, new_listings):
+def search_binance_and_update(pairing):
     """
-    Pretty much our main func
+    Pretty much our main func for binance
+    """
+    count = 57
+    while True:
+        time.sleep(3)
+        try:
+            latest_coin = get_last_coin(pairing)
+            if latest_coin:
+                store_new_listing(latest_coin)
+            
+            count = count + 3
+            if count % 60 == 0:
+                logger.info("One minute has passed.  Checking for coin announcements on Binanace every 3 seconds (in a separate thread)")
+                count = 0
+        except Exception as e:
+            logger.info(e)
+
+        
+
+
+
+def search_gateio_and_update(pairing, new_listings):
+    """
+    Pretty much our main func for gateio listings
     """
     count = 57
     while True:
         
-        latest_coins = get_last_coin(pairing, new_listings)
+        latest_coins = get_new_listing_coin(pairing, new_listings)
         if latest_coins:
             try:
                 ready = is_currency_trade_ready(latest_coins[0], pairing)
@@ -110,17 +139,22 @@ def search_and_update(pairing, new_listings):
                         # remove from list of coins to be listed
                         new_listings.pop(0)
                 
-                count = count + 3
-                if count % 60 == 0:
-                    logger.info("One minute has passed.  Checking for coin announcements every 3 seconds (in a separate thread)")
-                    count = 0
+                
             except GateApiException as e:
                 if e.label != "INVALID_CURRENCY":
                     logger.error(e)
             except Exception as e:
                 logger.info(e)
-
+        
+        
+        
+        count = count + 3
+        if count % 60 == 0:
+            logger.info("One minute has passed.  Checking for coin listing on Gate.io every 3 seconds (in a separate thread)")
+            count = 0
+       
         time.sleep(3)
+
 
 def get_all_currencies(single=False):
     """

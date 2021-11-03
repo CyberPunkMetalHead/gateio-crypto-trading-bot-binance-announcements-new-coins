@@ -83,11 +83,14 @@ def main():
         if(enable_sms):
             logger.info('!!! SMS Enabled on Buy/Sell !!!')
 
-    t = threading.Thread(target=search_and_update, args=[pairing, new_listings])
-    t.start()
+    t1 = threading.Thread(target=search_gateio_and_update, daemon=True, args=[pairing, new_listings])
+    t1.start()
 
-    #t2 = threading.Thread(target=get_all_currencies, daemon=True)
-    #t2.start()
+    t2 = threading.Thread(target=search_binance_and_update, daemon=True,  args=[pairing,])
+    t2.start()
+
+    t3 = threading.Thread(target=get_all_currencies, daemon=True)
+    t3.start()
 
     while True:
         # check if the order file exists and load the current orders
@@ -99,9 +102,14 @@ def main():
                 coin_tp = order[coin]['tp']
                 coin_sl = order[coin]['sl']
                 
-                volume = order[coin]['_amount']
-                stored_price = float(order[coin]['_price'])
-                symbol = order[coin]['_fee_currency']
+                if not test_mode:
+                    volume = order[coin]['_amount']
+                    stored_price = float(order[coin]['_price'])
+                    symbol = order[coin]['_fee_currency']
+                else:
+                    volume = order[coin]['volume']
+                    stored_price = float(order[coin]['price'])
+                    symbol = order[coin]['symbol']
 
                 if float(stored_price) == 0:
                     continue #avoid div by zero error
@@ -288,7 +296,7 @@ def main():
                                 'iceberg': '0',
                                 'left': str(left),
                                 '_left': str(left),
-                                '_fee': str(float(volume) * .03)
+                                '_fee': str(float(qty) * float(price) * .03)
                             }
                             logger.info('PLACING TEST ORDER')
                             logger.info(order[announcement_coin])
