@@ -109,9 +109,9 @@ def main():
                     stored_price = float(order[coin]['_price'])
                     symbol = order[coin]['_fee_currency']
                 else:
-                    volume = order[coin]['volume']
-                    stored_price = float(order[coin]['price'])
-                    symbol = order[coin]['symbol']
+                    volume = order[coin]['_amount']
+                    stored_price = float(order[coin]['_price'])
+                    symbol = order[coin]['_fee_currency']
 
                 if float(stored_price) == 0:
                     continue #avoid div by zero error
