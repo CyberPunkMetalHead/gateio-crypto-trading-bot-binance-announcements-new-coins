@@ -113,7 +113,7 @@ def main():
 
                 # close trade if tsl is reached or trail option is not enabled
                 elif float(last_price) < stored_price + (
-                        stored_price * sl / 100) or float(last_price) > stored_price + (
+                        stored_price * coin_sl / 100) or float(last_price) > stored_price + (
                         stored_price * coin_tp / 100) and not enable_tsl:
                     try:
                         # sell for real if test mode is set to false
@@ -121,7 +121,6 @@ def main():
                             logger.info(f'starting sell place_order with :{symbol} | {pairing} | {float(volume)*float(last_price)} | side=sell {last_price}')
                             sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
                             logger.info("Finish sell place_order")
-
                         logger.info(f'sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL')
 
                         # remove order from json file
@@ -174,7 +173,7 @@ def main():
 
         global supported_currencies
 
-        if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
+        if announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
             logger.info(f'New annoucement detected: {announcement_coin}')
 
             if supported_currencies is not False:

@@ -16,6 +16,7 @@ spot_api = SpotApi(ApiClient(client))
 
 global supported_currencies
 
+
 def get_last_coin():
     """
     Scrapes new listings page for and returns new Symbol when appropriate
@@ -26,9 +27,16 @@ def get_last_coin():
     logger.debug("Finished pulling announcement page")
     latest_announcement = latest_announcement['data']['articles'][0]['title']
     found_coin = re.findall('\(([^)]+)', latest_announcement)
+
+    # pull existing coin if file exists
+    if os.path.isfile('new_listing.json'):
+        existing_coin = load_order('new_listing.json')
+    else:
+        existing_coin = None
+        
     uppers = None
-    
-    if 'Will List' not in latest_announcement:
+
+    if 'Will List' not in latest_announcement or found_coin[0] == existing_coin:
         return None
     else:
         if len(found_coin) == 1:

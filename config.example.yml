@@ -1,6 +1,7 @@
 ---
   TRADE_OPTIONS:
     # In your pairing coin
+    # DO NOT DISABLE TSL!!!! YOUR BOT WILL NOT SELL
     QUANTITY: 15
     # BTCUSDT will be bought for example
     PAIRING: USDT
