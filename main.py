@@ -353,11 +353,10 @@ def main():
                                 newAmount = float(order[announcement_coin]['_amount']) - float(order[announcement_coin]['_left']) - float(order[announcement_coin]['_fee'])
                                 order[announcement_coin]['volume'] = newAmount
                             else:
-                                obj = order[announcement_coin]
                                 store_order('order_fulfilled.json', order)
 
                                 # you can only sell what you have. Minus fees.  Look for unfulfilled
-                                newAmount = float(obj._amount) - float(obj._left) - float(obj._fee)
+                                newAmount = float(order[announcement_coin]['_amount']) - float(order[announcement_coin]['_left']) - float(order[announcement_coin]['_fee'])
                                 order[announcement_coin]['_amount'] = newAmount
 
                             store_order('order.json', order)
