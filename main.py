@@ -127,7 +127,7 @@ def main():
 
                 stop_loss_price = stored_price + (stored_price*coin_sl /100)
 
-                logger.info(f'{symbol=}-{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
+                logger.info(f'{symbol=}-{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} x {volume} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
                 logger.info(f'{symbol=}-{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
 
                 if float(last_price) == 0:
@@ -169,7 +169,7 @@ def main():
                             sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
                             logger.info(f"Finish sell place_order {sell}")
 
-                        sold_message = f'sold {coin} with {(float(last_price) - stored_price) / float(stored_price)*100}% PNL'
+                        sold_message = f'sold {coin} with {round(float(last_price) - stored_price, 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL'
                         logger.info(sold_message)
 
                         # remove order from json file
@@ -193,6 +193,9 @@ def main():
                             sold_coins[coin] = sell
                             sold_coins[coin] = sell.__dict__
                             sold_coins[coin].pop("local_vars_configuration")
+                            sold_coins[coin]['profit'] = float(last_price) - stored_price
+                            sold_coins[coin]['relative_profit_%'] = round((float(
+                                    last_price) - stored_price) / stored_price * 100, 3)
 
                             store_order('sold.json', sold_coins)
                             logger.info('Order saved in sold.json')
@@ -310,7 +313,7 @@ def main():
                             order[announcement_coin]['tp'] = tp
                             order[announcement_coin]['sl'] = sl
                             order[announcement_coin]['symbol'] = announcement_coin
-                            logger.info('Finished buy place_order')
+                            logger.debug('Finished buy place_order')
 
                     except Exception as e:
                         logger.error(e)
