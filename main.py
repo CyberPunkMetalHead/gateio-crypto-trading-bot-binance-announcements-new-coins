@@ -177,7 +177,7 @@ def main():
             if announcement_coin:
                 logger.info(f'New annoucement detected: {announcement_coin}')
             if supported_currencies:
-                if announcement_coin is not False and announcement_coin in supported_currencies:
+                if announcement_coin and announcement_coin in supported_currencies:
                     logger.debug("Starting get_last_price")
                     price = get_last_price(announcement_coin, pairing)
 
