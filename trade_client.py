@@ -22,7 +22,7 @@ def is_currency_trade_ready(base, quote):
 
 
 
-def get_last_price(base,quote):
+def get_last_price(base,quote, return_price_only):
     """
     Args:
     'DOT', 'USDT'
@@ -30,6 +30,9 @@ def get_last_price(base,quote):
     tickers = spot_api.list_tickers(currency_pair=f'{base}_{quote}')
     assert len(tickers) == 1
     t = tickers[0]
+    if return_price_only:
+        return t.last
+    
     logger.info(f"GET PRICE: {t.currency_pair} | last={t.last} | lowest_ask={t.lowest_ask} | change%={t.change_percentage} | base_volue={t.base_volume} | quote_volume={t.quote_volume}")
     return t
     

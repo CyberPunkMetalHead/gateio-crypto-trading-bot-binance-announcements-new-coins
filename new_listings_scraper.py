@@ -123,15 +123,16 @@ def search_gateio_and_update(pairing, new_listings):
     """
     Pretty much our main func for gateio listings
     """
-    count = 57
+    count = 59
     while True:
         
         latest_coins = get_new_listing_coin(pairing, new_listings)
         if latest_coins:
             try:
-                ready = is_currency_trade_ready(latest_coins[0], pairing)
-                if ready:
-                        logger.info(f"Found new 'tradable' coin {latest_coins[0]}!! Adding to new listings.")
+                #ready = is_currency_trade_ready(latest_coins[0], pairing)
+                price = get_last_price(latest_coins[0], pairing, True)
+                if float(price) > 0:
+                        logger.info(f"Found new 'tradable' coin {latest_coins[0]} with a price of {price}!! Adding to new listings.")
                     
                         # store as announcement coin for main thread to pick up (It's go time!!!)
                         store_new_listing(latest_coins)
@@ -148,12 +149,12 @@ def search_gateio_and_update(pairing, new_listings):
         
         
         
-        count = count + 3
+        count = count + 1
         if count % 60 == 0:
             logger.info("One minute has passed.  Checking for coin listing on Gate.io every 3 seconds (in a separate thread)")
             count = 0
        
-        time.sleep(3)
+        time.sleep(1)
 
 
 def get_all_currencies(single=False):

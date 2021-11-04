@@ -121,7 +121,7 @@ def main():
                 #logger.info(f"Data for sell: {coin=},  {stored_price=}, {coin_tp=}, {coin_sl=}, {volume=}, {symbol=}")
 				
                 #logger.info(f"get_last_price existing coin: {coin}")
-                obj = get_last_price(symbol, pairing)
+                obj = get_last_price(symbol, pairing, False)
                 last_price = obj.last
                 #logger.info("Finished get_last_price")
 
@@ -273,7 +273,7 @@ def main():
                 if announcement_coin in supported_currencies:
                     
                     # get latest price object
-                    obj = get_last_price(announcement_coin, pairing)
+                    obj = get_last_price(announcement_coin, pairing, False)
                     price = obj.last
 
                     if float(price) == 0:
