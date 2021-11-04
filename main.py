@@ -56,6 +56,8 @@ global new_listings
 if os.path.isfile('newly_listed.json'):
     newly_listed = get_new_listings('newly_listed.json')
     new_listings = [c for c in list(newly_listed) if c not in order and c not in sold_coins]
+    if announcement_coin:
+        new_listings = [c for c in list(newly_listed) if c not in announcement_coin]
 else:
     new_listings = {}
 
