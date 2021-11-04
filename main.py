@@ -224,7 +224,8 @@ def main():
                         logger.info(f'Order created with {qty} on {announcement_coin}')
                         store_order('order.json', order)
                 else:
-                    logger.warning(f'{announcement_coin=} is not supported on gate io')
+                    if announcement_coin:
+                        logger.warning(f'{announcement_coin=} is not supported on gate io')
                     if os.path.isfile('new_listing.json'):
                         os.remove("new_listing.json")
                         logger.debug('Removed new_listing.json due to coin not being '
