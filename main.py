@@ -162,7 +162,7 @@ def main():
                         stored_price * coin_tp / 100) and not enable_tsl:
                     try:
 
-                        logger.info(f'starting sell place_order with :{symbol} | {pairing} | {volume} | {float(volume)*float(last_price)} | side=sell {last_price}')                        
+                        logger.info(f'starting sell place_order with :{symbol} | {pairing} | {volume} | {float(volume)*float(last_price)} | side=sell | last={last_price}')                        
 
                         # sell for real if test mode is set to false
                         if not test_mode:
@@ -171,7 +171,8 @@ def main():
                             #check for completed sell order
                             if sell._status != 'closed':
                                 # cancel sell order
-                                cancel_open_order(sell._id, coin, pairing)
+                                if sell._status == "open":
+                                    cancel_open_order(sell._id, coin, pairing)
 
                                 # change order to sell remaing
                                 order[coin]['_amount'] = sell._left
