@@ -346,11 +346,10 @@ def main():
                         
 
                         if order_status == 'filled' or order_status == "closed":
-                            if test_mode:
+                            if test_mode and float(order[announcement_coin]['_left']) > 0:
                                 # you can only sell what you have. Minus fees.  Look for unfulfilled
                                 newAmount = float(order[announcement_coin]['_amount']) - float(order[announcement_coin]['_left']) - float(order[announcement_coin]['_fee'])
                                 order[announcement_coin]['volume'] = newAmount
-                                left = order[announcement_coin]['left']
                             else:
                                 obj = get_order(order[announcement_coin]['_id'], announcement_coin, pairing)
 
