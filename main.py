@@ -179,7 +179,7 @@ def main():
                                     order[coin]['_amount'] = sell._left
                                 
                                     # store sell order in whatever state as "coin_id" if any 
-                                    id = f"{coin}_{id}_{datetime.timestamp(datetime.now())}"
+                                    id = f"{coin}_{id}"
                                     sold_coins[id] = sell
                                     sold_coins[id] = sell.__dict__
                                     sold_coins[id].pop("local_vars_configuration")
