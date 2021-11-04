@@ -348,7 +348,7 @@ def main():
                         
 
                         if order_status == 'filled' or order_status == "closed":
-                            if test_mode and float(order[announcement_coin]['_left']) > 0:
+                            if test_mode and float(order[announcement_coin]['_left']) > 0 and float(order[announcement_coin]['_amount']) > float(order[announcement_coin]['_left']):
                                 # you can only sell what you have. Minus fees.  Look for unfulfilled
                                 newAmount = float(order[announcement_coin]['_amount']) - float(order[announcement_coin]['_left']) - float(order[announcement_coin]['_fee'])
                                 order[announcement_coin]['volume'] = newAmount
@@ -360,7 +360,6 @@ def main():
                                 newAmount = float(obj._amount) - float(obj._left) - float(obj._fee)
                                 order[announcement_coin]['_amount'] = newAmount
 
-                            
                             store_order('order.json', order)
                             
                             if not test_mode and enable_sms:
