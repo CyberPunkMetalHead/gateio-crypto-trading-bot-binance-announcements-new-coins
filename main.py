@@ -175,14 +175,15 @@ def main():
                                     cancel_open_order(sell._id, coin, pairing)
 
                                 # change order to sell remaing
-                                order[coin]['_amount'] = sell._left
+                                if float(sell._left) > 0 and float(sell._amount) > float(sell._left):
+                                    order[coin]['_amount'] = sell._left
                                 
-                                # store sell order in whatever state as "coin_id"
-                                id = f"{coin}_{id}"
-                                sold_coins[id] = sell
-                                sold_coins[id] = sell.__dict__
-                                sold_coins[id].pop("local_vars_configuration")
-                                logger.info(f"Sell order did not close! {sell._left} remaining. Perform sell again")
+                                    # store sell order in whatever state as "coin_id" if any 
+                                    id = f"{coin}_{id}_{datetime.timestamp(datetime.now())}"
+                                    sold_coins[id] = sell
+                                    sold_coins[id] = sell.__dict__
+                                    sold_coins[id].pop("local_vars_configuration")
+                                    logger.info(f"Sell order did not close! {sell._left} remaining. Perform sell again")
                                 continue
                             
                             logger.info(f"Finish sell place_order {sell}")
