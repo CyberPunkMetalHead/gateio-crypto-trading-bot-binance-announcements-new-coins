@@ -79,8 +79,8 @@ def store_new_listing(listing):
 
     if os.path.isfile('new_listing.json'):
         file = load_order('new_listing.json')
-        if set(listing) == set(file):
-            return file
+        if set(listing).intersection(set(file)) == set(listing):
+            return False
         else:
             joined = file + listing
             
