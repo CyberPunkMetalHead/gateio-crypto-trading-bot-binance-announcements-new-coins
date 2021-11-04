@@ -67,9 +67,14 @@ def place_order(base,quote, amount, side, last_price):
 
 
 def get_order(id,base,quote):
-    t = spot_api.get_order(id, currency_pair=f'{base}_{quote}')
-    logger.info(f"GET ORDER: {id=} | {t.account} | {t.type} | {t.side} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price}")
-    return t
+    try:
+        t = spot_api.get_order(id, currency_pair=f'{base}_{quote}')
+        logger.info(f"GET ORDER: {id=} | {t.account} | {t.type} | {t.side} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price}")
+    except Exception as e:
+        logger.error(e)
+        return False
+    else:
+        return t
 
 def cancel_open_order(id, base, quote):
     
