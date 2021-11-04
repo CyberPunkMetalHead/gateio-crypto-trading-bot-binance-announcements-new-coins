@@ -25,4 +25,5 @@ config.yml
 test_order.py
 
 # Ignore log backups
+backups/
 logs/
