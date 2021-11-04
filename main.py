@@ -167,6 +167,23 @@ def main():
                         # sell for real if test mode is set to false
                         if not test_mode:
                             sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
+
+                            #check for completed sell order
+                            if sell._status != 'closed':
+                                # cancel sell order
+                                cancel_open_order(sell._id, coin, pairing)
+
+                                # change order to sell remaing
+                                order[coin]['_amount'] = sell._left
+                                
+                                # store sell order in whatever state as "coin_id"
+                                id = f"{coin}_{id}"
+                                sold_coins[id] = sell
+                                sold_coins[id] = sell.__dict__
+                                sold_coins[id].pop("local_vars_configuration")
+                                logger.info(f"Sell order did not close! {sell._left} remaining. Perform sell again")
+                                continue
+                            
                             logger.info(f"Finish sell place_order {sell}")
 
                         sold_message = f'sold {coin} with {round(float(last_price) - stored_price, 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL'
