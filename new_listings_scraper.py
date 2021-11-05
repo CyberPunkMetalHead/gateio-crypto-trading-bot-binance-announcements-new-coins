@@ -1,6 +1,8 @@
 import ast
 import os.path
+import random
 import re
+import string
 import time
 import re
 
@@ -11,8 +13,10 @@ from auth.gateio_auth import *
 from logger import logger
 from store_order import *
 
-client = load_gateio_creds('auth/auth.yml')
-spot_api = SpotApi(ApiClient(client))
+# client = load_gateio_creds('auth/auth.yml')
+# spot_api = SpotApi(ApiClient(client))
+
+spot_api = SpotApi()
 
 global supported_currencies
 
@@ -22,7 +26,17 @@ def get_last_coin():
     Scrapes new listings page for and returns new Symbol when appropriate
     """
     logger.debug("Pulling announcement page")
-    latest_announcement = requests.get("https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?catalogId=48&pageNo=1&pageSize=15&rnd=" + str(time.time()))
+    # Generate random query/params to help prevent caching
+    rand_page = random.randint(1, 200)
+    letters = string.ascii_letters
+    random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
+    random_number = random.randint(1, 99999999999999999999)
+    queries = ["catalogId=48", "pageNo=1", f"pageSize={str(rand_page)}", f"rnd={str(time.time())}", f"{random_string}={str(random_number)}"]
+    random.shuffle(queries)
+    logger.debug(f"Queries: {queries}")
+    request_url = f"https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}"
+    latest_announcement = requests.get(request_url)
+    logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
     latest_announcement = latest_announcement['data']['articles'][0]['title']
