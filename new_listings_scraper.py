@@ -25,19 +25,34 @@ def get_last_coin(pairing):
     letters = string.ascii_letters
     random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
     random_number = random.randint(1,99999999999999999999)
-    queries = ["catalogId=48", "pageNo=1", "pageSize=" + str(rand_page), "rnd=" + str(time.time()), random_string + "=" + str(random_number)]
+    
+    
+    
+    #queries = ["catalogId=48", "pageNo=1", "pageSize=" + str(rand_page), "rnd=" + str(time.time()), random_string + "=" + str(random_number)]
+    #random.shuffle(queries)
+    #request_url = "https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?" + queries[0] + "&" + queries[1] + "&" + queries[2] + "&" + queries[3] + "&" + queries[4]
+    #logger.debug(request_url)
+    #latest_announcement = requests.get(request_url)
+    #logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+    #latest_announcement = latest_announcement.json()
+    #logger.debug("Finished pulling announcement page")
+    #announcement = latest_announcement['data']['articles'][0]['title']
+
+
+    queries = ["pageNo=1", f"pageSize={str(rand_page)}", f"rnd={str(time.time())}", f"{random_string}={str(random_number)}"]
     random.shuffle(queries)
-    request_url = "https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?" + queries[0] + "&" + queries[1] + "&" + queries[2] + "&" + queries[3] + "&" + queries[4]
-    
+    request_url = f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query?type=1&catalogId=48&{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}"
+
     logger.debug(request_url)
-    
+
     latest_announcement = requests.get(request_url)
-    logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+    #logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
-    announcement = latest_announcement['data']['articles'][0]['title']
+    announcement = latest_announcement['data']['catalogs'][0]['articles'][0]['title']
 
     return get_coins_by_accouncement_text(announcement, pairing)
+
 
 
 def get_coins_by_accouncement_text(latest_announcement, pairing):
