@@ -184,8 +184,8 @@ def get_all_currencies(single=False):
         currency_list = [currency['currency'] for currency in all_currencies]
         with open('currencies.json', 'w') as f:
             json.dump(currency_list, f, indent=4)
-            logger.info("List of gate io currencies saved to currencies.json. Waiting 1 "
-                  "second before refreshing list...")
+            logger.info("List of gate io currencies saved to currencies.json. Waiting 5 "
+                  "minutes before refreshing list...")
         supported_currencies = currency_list
         if single:
             return supported_currencies
