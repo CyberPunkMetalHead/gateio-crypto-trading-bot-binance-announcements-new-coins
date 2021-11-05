@@ -303,6 +303,8 @@ def main():
                                 'time': datetime.timestamp(datetime.now()),
                                 'tp': tp,
                                 'sl': sl,
+                                'ttp': ttp,
+                                'tsl': tsl,
                                 'id': 'test-order',
                                 '_id': 'test-order',
                                 'text': 'test-order',
