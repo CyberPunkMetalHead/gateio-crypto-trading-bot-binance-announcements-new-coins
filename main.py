@@ -186,9 +186,9 @@ def main():
                                     logger.info(f"Sell order did not close! {sell._left} remaining. Perform sell again")
                                 continue
                             
-                            logger.info(f"Finish sell place_order {sell}")
+                            logger.debug(f"Finish sell place_order {sell}")
 
-                        sold_message = f'sold {coin} with {round(float(last_price) - stored_price, 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL'
+                        sold_message = f'sold {coin} with {round((float(last_price) - stored_price) * float(volume), 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL'
                         logger.info(sold_message)
 
                         # remove order from json file
