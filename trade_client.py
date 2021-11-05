@@ -33,7 +33,7 @@ def get_last_price(base,quote, return_price_only):
     if return_price_only:
         return t.last
     
-    logger.info(f"GET PRICE: {t.currency_pair} | last={t.last} | lowest_ask={t.lowest_ask} | change%={t.change_percentage} | base_volue={t.base_volume} | quote_volume={t.quote_volume}")
+    logger.info(f"GET PRICE: {t.currency_pair} | last={t.last} | change%={t.change_percentage} | lowest_ask={t.lowest_ask} | highest_bid={t.highest_bid} | base_volue={t.base_volume} | quote_volume={t.quote_volume}")
     return t
     
 
@@ -60,7 +60,7 @@ def place_order(base,quote, amount, side, last_price):
         order = Order(amount=str(float(amount)/float(last_price)), price=last_price, side=side, currency_pair=f'{base}_{quote}', time_in_force='ioc')
         order = spot_api.create_order(order)
         t = order
-        logger.info(f"PLACE ORDER: {t.side} | {t.id} | {t.account} | {t.type} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price}")
+        logger.info(f"PLACE ORDER: {t.side} | {t.id} | {t.account} | {t.type} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price} | fee={t.fee} {t.fee_currency}")
     except Exception as e:
         logger.error(e)
         raise
