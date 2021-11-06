@@ -160,7 +160,7 @@ def main():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 'price': last_price}
-                            logger.info('Sold coins:\r\n' + sold_coins[coin])
+                            logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
 
                             store_order('sold.json', sold_coins)
 
@@ -175,7 +175,7 @@ def main():
 
         if announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
             if announcement_coin:
-                logger.info(f'New annoucement detected: {announcement_coin}')
+                logger.info(f'New announcement detected: {announcement_coin}')
             if supported_currencies:
                 if announcement_coin and announcement_coin in supported_currencies:
                     logger.debug("Starting get_last_price")
