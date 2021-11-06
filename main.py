@@ -160,7 +160,7 @@ def main():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 'price': last_price}
-                            logger.info('Sold coins:\r\n' + sold_coins[coin])
+                            logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
 
                             store_order('sold.json', sold_coins)
 
@@ -174,10 +174,10 @@ def main():
         global supported_currencies
 
         if announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
-            logger.info(f'New annoucement detected: {announcement_coin}')
-
-            if supported_currencies is not False:
-                if announcement_coin in supported_currencies:
+            if announcement_coin:
+                logger.info(f'New announcement detected: {announcement_coin}')
+            if supported_currencies:
+                if announcement_coin and announcement_coin in supported_currencies:
                     logger.debug("Starting get_last_price")
                     price = get_last_price(announcement_coin, pairing)
 
@@ -224,11 +224,12 @@ def main():
                         logger.info(f'Order created with {qty} on {announcement_coin}')
                         store_order('order.json', order)
                 else:
-                    logger.warning(f'{announcement_coin=} is not supported on gate io')
-                    if os.path.isfile('new_listing.json'):
-                        os.remove("new_listing.json")
-                        logger.debug('Removed new_listing.json due to coin not being '
-                                  'listed on gate io')
+                    if announcement_coin:
+                        logger.warning(f'{announcement_coin=} is not supported on gate io')
+                        if os.path.isfile('new_listing.json'):
+                            os.remove("new_listing.json")
+                            logger.debug('Removed new_listing.json due to coin not being '
+                                      'listed on gate io')
             else:
                 get_all_currencies()
         else:
