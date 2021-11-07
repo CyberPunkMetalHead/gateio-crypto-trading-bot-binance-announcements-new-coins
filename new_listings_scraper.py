@@ -88,8 +88,8 @@ def search_and_update():
     Pretty much our main func
     """
     while not globals.stop_threads:
-        sleepTime = 3
-        for x in range(sleepTime):
+        sleep_time = 3
+        for x in range(sleep_time):
             time.sleep(1)
             if globals.stop_threads:
                 break
@@ -97,8 +97,7 @@ def search_and_update():
             latest_coin = get_last_coin()
             if latest_coin:
                 store_new_listing(latest_coin)
-            logger.info("Checking for coin announcements every "+str(sleepTime)+" seconds (in a separate "
-                       "thread)")
+            logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
         except Exception as e:
             logger.info(e)
     else:
