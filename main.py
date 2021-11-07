@@ -177,11 +177,12 @@ def main():
 
             global supported_currencies
 
-            if announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
-                if announcement_coin:
-                    logger.info(f'New announcement detected: {announcement_coin}')
+            if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
+                logger.info(f'New announcement detected: {announcement_coin}')
+                if not supported_currencies:
+                    supported_currencies = get_all_currencies(single=True)
                 if supported_currencies:
-                    if announcement_coin and announcement_coin in supported_currencies:
+                    if announcement_coin in supported_currencies:
                         logger.debug("Starting get_last_price")
                         price = get_last_price(announcement_coin, pairing)
 
@@ -228,14 +229,13 @@ def main():
                             logger.info(f'Order created with {qty} on {announcement_coin}')
                             store_order('order.json', order)
                     else:
-                        if announcement_coin:
-                            logger.warning(f'{announcement_coin=} is not supported on gate io')
-                            if os.path.isfile('new_listing.json'):
-                                os.remove("new_listing.json")
-                                logger.debug('Removed new_listing.json due to coin not being '
-                                        'listed on gate io')
+                        logger.warning(f'{announcement_coin=} is not supported on gate io')
+                        if os.path.isfile('new_listing.json'):
+                            os.remove("new_listing.json")
+                            logger.debug('Removed new_listing.json due to coin not being '
+                                    'listed on gate io')
                 else:
-                    get_all_currencies()
+                    logger.error('supported_currencies is not initialized')
             else:
                 logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
