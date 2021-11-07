@@ -6,6 +6,8 @@ import string
 import time
 import re
 
+import globals
+
 import requests
 from gate_api import ApiClient, SpotApi
 
@@ -85,18 +87,22 @@ def search_and_update():
     """
     Pretty much our main func
     """
-    while True:
-        time.sleep(3)
+    while not globals.stop_threads:
+        sleepTime = 3
+        for x in range(sleepTime):
+            time.sleep(1)
+            if globals.stop_threads:
+                break
         try:
             latest_coin = get_last_coin()
             if latest_coin:
                 store_new_listing(latest_coin)
-            logger.info("Checking for coin announcements every 1 minute (in a separate "
+            logger.info("Checking for coin announcements every "+str(sleepTime)+" seconds (in a separate "
                        "thread)")
         except Exception as e:
             logger.info(e)
     else:
-        logger.info("while True loop in search_and_update has stopped.")
+        logger.info("while True loop in search_and_update() has stopped.")
 
 
 def get_all_currencies(single=False):
@@ -105,7 +111,7 @@ def get_all_currencies(single=False):
     :return:
     """
     global supported_currencies
-    while True:
+    while not globals.stop_threads:
         logger.info("Getting the list of supported currencies from gate io")
         all_currencies = ast.literal_eval(str(spot_api.list_currencies()))
         currency_list = [currency['currency'] for currency in all_currencies]
@@ -117,4 +123,9 @@ def get_all_currencies(single=False):
         if single:
             return supported_currencies
         else:
-            time.sleep(300)
+            for x in range(300):
+                time.sleep(1)
+                if globals.stop_threads:
+                    break
+    else:
+        logger.info("while True loop in get_all_currencies() has stopped.")
