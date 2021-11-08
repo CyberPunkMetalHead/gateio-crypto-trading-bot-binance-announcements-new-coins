@@ -58,7 +58,7 @@ def get_last_coin(pairing):
 
 def get_coins_by_accouncement_text(latest_announcement, pairing):
     
-    if "adds" in latest_announcement.lower() and "trading pairs" in latest_announcement.lower() and pairing in latest_announcement:
+    if "adds" in latest_announcement.lower() and "trading pair" in latest_announcement.lower() and pairing in latest_announcement:
         found_pairs = re.findall(r'[A-Z]{1,10}[/][A-Z]*', latest_announcement)
         found_coins = [i.replace(f'/{pairing}', "") for i in found_pairs if i.find(pairing) != -1]
         return found_coins
@@ -113,7 +113,7 @@ def store_new_listing(listing):
             return False
         else:
             joined = file + listing
-            
+           
             with open('new_listing.json', 'w') as f:
                 json.dump(joined, f, indent=4)
             
@@ -138,9 +138,9 @@ def search_binance_and_update(pairing):
             if globals.stop_threads:
                 break
         try:
-            latest_coin = get_last_coin(pairing)
-            if latest_coin:
-                store_new_listing(latest_coin)
+            latest_coins = get_last_coin(pairing)
+            if latest_coins and len(latest_coins) > 0:
+                store_new_listing(latest_coins)
             
             count = count + 3
             if count % 60 == 0:
