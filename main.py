@@ -3,12 +3,14 @@ from store_order import *
 from logger import logger
 from load_config import *
 from new_listings_scraper import *
+
 import globals
 
 from collections import defaultdict
 from datetime import datetime, time
 import time
 import threading
+import copy
 
 import json
 from json import JSONEncoder
@@ -16,7 +18,7 @@ from json import JSONEncoder
 import os.path
 import sys, os
 
-old_coins = ["OTHERCRAP"]
+old_coins = ["MOVR", "BNX", "SAND"]
 
 # loads local configuration
 config = load_config('config.yml')
@@ -37,12 +39,28 @@ if os.path.isfile('new_listing.json'):
 else:
     announcement_coin = False
 
+
+
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
 global supported_currencies
+
+
 logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
+
+
+global new_listings
+
+# load necessary files
+if os.path.isfile('newly_listed.json'):
+    newly_listed = read_newly_listed('newly_listed.json')
+    new_listings = [c for c in list(newly_listed) if c not in order and c not in sold_coins]
+    if announcement_coin:
+        new_listings = [c for c in list(newly_listed) if c not in announcement_coin]
+else:
+    new_listings = {}
 
 
 def main():
@@ -57,8 +75,8 @@ def main():
     tsl = config['TRADE_OPTIONS']['TSL']
     ttp = config['TRADE_OPTIONS']['TTP']
     pairing = config['TRADE_OPTIONS']['PAIRING']
-    qty = config['TRADE_OPTIONS']['QUANTITY']
     test_mode = config['TRADE_OPTIONS']['TEST']
+
 
     globals.stop_threads = False
 
@@ -74,6 +92,7 @@ def main():
             # basically the sell block and update TP and SL logic
             if len(order) > 0:
                 for coin in list(order):
+
                     # store some necessary trade info for a sell
                     coin_tp = order[coin]['tp']
                     coin_sl = order[coin]['sl']
@@ -240,6 +259,8 @@ def main():
                 logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
             time.sleep(3)
+
+
             # except Exception as e:
             # print(e)
     except KeyboardInterrupt:

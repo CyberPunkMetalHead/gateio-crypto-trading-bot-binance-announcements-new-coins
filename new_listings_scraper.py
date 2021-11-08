@@ -4,7 +4,8 @@ import random
 import re
 import string
 import time
-import re
+import random
+import string
 
 import globals
 
@@ -14,6 +15,8 @@ from gate_api import ApiClient, SpotApi
 from auth.gateio_auth import *
 from logger import logger
 from store_order import *
+from trade_client import *
+import globals
 
 client = load_gateio_creds('auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
@@ -21,10 +24,10 @@ spot_api = SpotApi(ApiClient(client))
 global supported_currencies
 
 
+
 def get_announcement():
     """
     Retrieves new coin listing announcements
-
     """
     logger.debug("Pulling announcement page")
     # Generate random query/params to help prevent caching
@@ -75,7 +78,14 @@ def get_last_coin():
         if len(found_coin) != 1:
             uppers = None
     print(f'{uppers=}')
-    return uppers
+
+
+def read_newly_listed(file):
+    """
+    Get user inputed new listings (see https://www.gate.io/en/marketlist?tab=newlisted)
+    """
+    with open(file, "r+") as f:
+        return json.load(f)
 
 
 def store_new_listing(listing):
@@ -85,11 +95,14 @@ def store_new_listing(listing):
 
     if os.path.isfile('new_listing.json'):
         file = load_order('new_listing.json')
-        if listing in file:
-            return file
+        if set(listing).intersection(set(file)) == set(listing):
+            return False
         else:
-            file = listing
-            store_order('new_listing.json', file)
+            joined = file + listing
+           
+            with open('new_listing.json', 'w') as f:
+                json.dump(joined, f, indent=4)
+            
             logger.info("New listing detected, updating file")
             return file
     else:

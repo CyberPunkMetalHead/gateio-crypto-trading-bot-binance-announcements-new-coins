@@ -12,6 +12,7 @@
     ENABLE_TSL: True
     TSL: -4
     TTP: 2
+    ENABLE_SMS: False
   LOGGING:
     # Logging levels used in this program are ERROR, INFO, and DEBUG
     LOG_LEVEL: INFO
