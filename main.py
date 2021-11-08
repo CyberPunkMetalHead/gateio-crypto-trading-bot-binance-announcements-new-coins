@@ -18,7 +18,7 @@ from json import JSONEncoder
 import os.path
 import sys, os
 
-old_coins = ["MOVR", "BNX"]
+old_coins = ["MOVR", "BNX", "SAND"]
 
 # loads local configuration
 config = load_config('config.yml')
@@ -249,7 +249,7 @@ def main():
                                     'volume': volume,
                                     'time': datetime.timestamp(datetime.now()),
                                     'profit': f'{float(last_price) - stored_price}',
-                                    'relative_profit_%': f'{(float(last_price) - stored_price) / stored_price * 100}%'
+                                    'relative_profit_%': f'{(float(last_price) - stored_price) / stored_price * 100}%',
                                     'id': 'test-order',
                                     'text': 'test-order',
                                     'create_time': datetime.timestamp(datetime.now()),
