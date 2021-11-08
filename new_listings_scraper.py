@@ -82,6 +82,20 @@ def get_newly_listed_coin(pairing, new_listings):
     return False
 
 
+def read_newly_listed(file):
+    """
+    Get user inputed new listings (see https://www.gate.io/en/marketlist?tab=newlisted)
+    """
+    with open(file, "r+") as f:
+        return json.load(f)
+
+def store_newly_listed(listings):
+    """
+    Save order into local json file
+    """
+    with open('newly_listed.json', 'w') as f:
+        json.dump(listings, f, indent=4)
+
 
 def store_new_listing(listing):
     """
