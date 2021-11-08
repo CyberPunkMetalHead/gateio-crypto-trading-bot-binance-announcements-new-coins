@@ -323,6 +323,9 @@ def main():
                             order[announcement_coin]['_amount'] = f'{volume / float(price)}'
                             order[announcement_coin]['_left'] = f'{volume / float(price)}'
                             order[announcement_coin]['_fee'] = f'{0}'
+                            order[announcement_coin]['_tp'] = f'{0}'
+                            order[announcement_coin]['_sl'] = f'{0}'
+                            order[announcement_coin]['_status'] = 'unknown'
                             if announcement_coin in session:
                                 if len(session[announcement_coin]['orders']) == 0:
                                     order[announcement_coin]['_status'] = 'test_partial_fill_order'
