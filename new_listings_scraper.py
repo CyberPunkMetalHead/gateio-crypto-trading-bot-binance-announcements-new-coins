@@ -19,40 +19,35 @@ spot_api = SpotApi(ApiClient(client))
 
 global supported_currencies
 
-def get_last_coin(pairing):
-    
+
+
+def get_announcement(pairing):
+    """
+    Retrieves new coin listing announcements
+    """
     logger.debug("Pulling announcement page")
-    rand_page = random.randint(1, 200)
+    # Generate random query/params to help prevent caching
+    rand_page_size = random.randint(1, 200)
     letters = string.ascii_letters
     random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
-    random_number = random.randint(1,99999999999999999999)
-    
-    
-    
-    #queries = ["catalogId=48", "pageNo=1", "pageSize=" + str(rand_page), "rnd=" + str(time.time()), random_string + "=" + str(random_number)]
-    #random.shuffle(queries)
-    #request_url = "https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?" + queries[0] + "&" + queries[1] + "&" + queries[2] + "&" + queries[3] + "&" + queries[4]
-    #logger.debug(request_url)
-    #latest_announcement = requests.get(request_url)
-    #logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
-    #latest_announcement = latest_announcement.json()
-    #logger.debug("Finished pulling announcement page")
-    #announcement = latest_announcement['data']['articles'][0]['title']
-
-
-    queries = ["pageNo=1", f"pageSize={str(rand_page)}", f"rnd={str(time.time())}", f"{random_string}={str(random_number)}"]
+    random_number = random.randint(1, 99999999999999999999)
+    queries = ["type=1", "catalogId=48", "pageNo=1", f"pageSize={str(rand_page_size)}", f"rnd={str(time.time())}",
+               f"{random_string}={str(random_number)}"]
     random.shuffle(queries)
-    request_url = f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query?type=1&catalogId=48&{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}"
-
-    logger.debug(request_url)
-
+    logger.debug(f"Queries: {queries}")
+    request_url = f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query" \
+                  f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     latest_announcement = requests.get(request_url)
-    #logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+    try:
+        logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+    except KeyError:
+        # No X-Cache header was found - great news, we're hitting the source.
+        pass
+
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
-    announcement = latest_announcement['data']['catalogs'][0]['articles'][0]['title']
 
-    return get_coins_by_accouncement_text(announcement, pairing)
+    return get_coins_by_accouncement_text(latest_announcement, pairing)
 
 
 
@@ -86,20 +81,6 @@ def get_new_listing_coin(pairing, new_listings):
     
     return False
 
-
-def get_new_listings(file):
-    """
-    Get user inputed new listings (see https://www.gate.io/en/marketlist?tab=newlisted)
-    """
-    with open(file, "r+") as f:
-        return json.load(f)
-
-def store_newly_listed(listings):
-    """
-    Save order into local json file
-    """
-    with open('newly_listed.json', 'w') as f:
-        json.dump(listings, f, indent=4)
 
 
 def store_new_listing(listing):
@@ -138,7 +119,7 @@ def search_binance_and_update(pairing):
             if globals.stop_threads:
                 break
         try:
-            latest_coins = get_last_coin(pairing)
+            latest_coins = get_announcement(pairing)
             if latest_coins and len(latest_coins) > 0:
                 store_new_listing(latest_coins)
             

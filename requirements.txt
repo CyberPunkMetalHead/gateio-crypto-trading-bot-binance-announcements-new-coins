@@ -2,3 +2,4 @@ requests==2.25.1
 gate_api==4.22.2
 PyYAML==6.0
 twilio==7.2.0
+pytest==6.2.5
