@@ -9,6 +9,7 @@
     # In %
     SL: -3
     TP: 2
+    24H: 2
     ENABLE_TSL: True
     TSL: -4
     TTP: 2
