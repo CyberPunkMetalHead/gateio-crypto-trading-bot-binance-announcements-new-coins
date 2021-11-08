@@ -7,6 +7,7 @@ order.json
 sold.json
 new_listing.json
 newly_listed.json
+session.json
 
 # Ignore bot log
 bot.log
