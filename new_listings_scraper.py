@@ -19,9 +19,10 @@ spot_api = SpotApi(ApiClient(client))
 global supported_currencies
 
 
-def get_last_coin():
+def get_announcement():
     """
-    Scrapes new listings page for and returns new Symbol when appropriate
+    Retrieves new coin listing announcements
+
     """
     logger.debug("Pulling announcement page")
     # Generate random query/params to help prevent caching
@@ -29,15 +30,30 @@ def get_last_coin():
     letters = string.ascii_letters
     random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
     random_number = random.randint(1, 99999999999999999999)
-    queries = ["catalogId=48", "pageNo=1", f"pageSize={str(rand_page_size)}", f"rnd={str(time.time())}", f"{random_string}={str(random_number)}"]
+    queries = ["type=1", "catalogId=48", "pageNo=1", f"pageSize={str(rand_page_size)}", f"rnd={str(time.time())}",
+               f"{random_string}={str(random_number)}"]
     random.shuffle(queries)
     logger.debug(f"Queries: {queries}")
-    request_url = f"https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}"
+    request_url = f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query" \
+                  f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     latest_announcement = requests.get(request_url)
-    logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+    try:
+        logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+    except KeyError:
+        # No X-Cache header was found - great news, we're hitting the source.
+        pass
+
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
-    latest_announcement = latest_announcement['data']['articles'][0]['title']
+    return latest_announcement['data']['catalogs'][0]['articles'][0]['title']
+
+
+def get_last_coin():
+    """
+     Returns new Symbol when appropriate
+    """
+    latest_announcement = get_announcement()
+
     found_coin = re.findall('\(([^)]+)', latest_announcement)
 
     # pull existing coin if file exists
@@ -45,7 +61,7 @@ def get_last_coin():
         existing_coin = load_order('new_listing.json')
     else:
         existing_coin = None
-        
+
     uppers = None
 
     if 'Will List' not in latest_announcement or found_coin[0] == existing_coin:
@@ -92,7 +108,7 @@ def search_and_update():
             if latest_coin:
                 store_new_listing(latest_coin)
             logger.info("Checking for coin announcements every 1 minute (in a separate "
-                       "thread)")
+                        "thread)")
         except Exception as e:
             logger.info(e)
     else:
@@ -112,7 +128,7 @@ def get_all_currencies(single=False):
         with open('currencies.json', 'w') as f:
             json.dump(currency_list, f, indent=4)
             logger.info("List of gate io currencies saved to currencies.json. Waiting 5 "
-                  "minutes before refreshing list...")
+                        "minutes before refreshing list...")
         supported_currencies = currency_list
         if single:
             return supported_currencies
