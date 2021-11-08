@@ -4,7 +4,7 @@ from logger import logger
 from load_config import *
 from new_listings_scraper import *
 from send_sms import *
-
+import globals
 
 from collections import defaultdict
 from datetime import datetime, time
@@ -79,19 +79,20 @@ def main():
     enable_sms = config['TRADE_OPTIONS']['ENABLE_SMS']
     
     max_qty = qty
+    globals.stop_threads = False
     
     if not test_mode:
         logger.info(f'!!! LIVE MODE !!!')
         if(enable_sms):
             logger.info('!!! SMS Enabled on Buy/Sell !!!')
 
-    t1 = threading.Thread(target=search_gateio_and_update, daemon=True, args=[pairing, new_listings])
+    t1 = threading.Thread(target=search_gateio_and_update, args=[pairing, new_listings])
     t1.start()
 
-    t2 = threading.Thread(target=search_binance_and_update, daemon=True,  args=[pairing,])
+    t2 = threading.Thread(target=search_binance_and_update, args=[pairing,])
     t2.start()
 
-    t3 = threading.Thread(target=get_all_currencies, daemon=True)
+    t3 = threading.Thread(target=get_all_currencies)
     t3.start()
 
     while True:
@@ -109,6 +110,7 @@ def main():
                     stored_price = float(order[coin]['_price'])
                     symbol = order[coin]['_fee_currency']
                 else:
+    try:
                     volume = order[coin]['_amount']
                     stored_price = float(order[coin]['_price'])
                     symbol = order[coin]['_fee_currency']
@@ -391,6 +393,12 @@ def main():
         time.sleep(1)
         # except Exception as e:
         # print(e)
+    except KeyboardInterrupt:
+        logger.info('Stopping Threads')
+        globals.stop_threads = True
+        t1.join()
+        t2.join()
+        t3.join()
 
 
 if __name__ == '__main__':

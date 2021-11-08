@@ -12,6 +12,7 @@ from auth.gateio_auth import *
 from logger import logger
 from store_order import *
 from trade_client import *
+import globals
 
 client = load_gateio_creds('auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
@@ -130,8 +131,12 @@ def search_binance_and_update(pairing):
     Pretty much our main func for binance
     """
     count = 57
-    while True:
-        time.sleep(3)
+    while not globals.stop_threads:
+        sleep_time = 3
+        for x in range(sleep_time):
+            time.sleep(1)
+            if globals.stop_threads:
+                break
         try:
             latest_coin = get_last_coin(pairing)
             if latest_coin:
@@ -153,7 +158,7 @@ def search_gateio_and_update(pairing, new_listings):
     Pretty much our main func for gateio listings
     """
     count = 59
-    while True:
+    while not globals.stop_threads:
         
         latest_coins = get_new_listing_coin(pairing, new_listings)
         if latest_coins:
@@ -184,6 +189,8 @@ def search_gateio_and_update(pairing, new_listings):
             count = 0
        
         time.sleep(1)
+        if globals.stop_threads:
+                break
 
 
 def get_all_currencies(single=False):
@@ -192,7 +199,7 @@ def get_all_currencies(single=False):
     :return:
     """
     global supported_currencies
-    while True:
+    while not globals.stop_threads:
         logger.info("Getting the list of supported currencies from gate io")
         response = spot_api.list_currencies()
         all_currencies = ast.literal_eval(str(response))
@@ -205,6 +212,11 @@ def get_all_currencies(single=False):
         if single:
             return supported_currencies
         else:
-            time.sleep(300)
+            for x in range(300):
+                time.sleep(1)
+                if globals.stop_threads:
+                    break
 
       
+
+
