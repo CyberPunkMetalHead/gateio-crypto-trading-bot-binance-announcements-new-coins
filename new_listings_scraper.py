@@ -47,7 +47,9 @@ def get_announcement(pairing):
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
 
-    return get_coins_by_accouncement_text(latest_announcement, pairing)
+    announcement = latest_announcement['data']['catalogs'][0]['articles'][0]['title']
+
+    return get_coins_by_accouncement_text(announcement, pairing)
 
 
 
