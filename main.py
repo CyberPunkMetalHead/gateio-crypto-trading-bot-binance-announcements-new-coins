@@ -125,8 +125,7 @@ def main():
 
                     stop_loss_price = stored_price + (stored_price*coin_sl /100)
 
-                    logger.info(f'{symbol=}-{last_price=}\t[BUY: ${"{:,.2f}".format(stored_price)} x {volume} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]\t[TOP: ${"{:,.2f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]')
-                    logger.info(f'{symbol=}-{stop_loss_price=}  \t{"{:,.2f}".format(coin_sl)}%')
+                    logger.info(f'{symbol=}-{last_price=}\t[STOP: ${"{:,.5f}".format(stop_loss_price)} or {"{:,.2f}".format(coin_sl)}%]\t[TOP: ${"{:,.5f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]\t[BUY: ${"{:,.5f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]')
 
                     if float(last_price) == 0:
                         continue # need positive price / do not place buy order 
@@ -222,9 +221,8 @@ def main():
                                 sold_coins[coin] = sell
                                 sold_coins[coin] = sell.__dict__
                                 sold_coins[coin].pop("local_vars_configuration")
-                                sold_coins[coin]['profit'] = float(last_price) - stored_price
-                                sold_coins[coin]['relative_profit_%'] = round((float(
-                                        last_price) - stored_price) / stored_price * 100, 3)
+                                sold_coins[coin]['profit'] = f'{float(last_price) - stored_price}'
+                                sold_coins[coin]['relative_profit_%'] = (float(last_price) - stored_price) / stored_price * 100
 
                                 
                                 # add to session orders
@@ -241,9 +239,8 @@ def main():
                                     'price': last_price,
                                     'volume': volume,
                                     'time': datetime.timestamp(datetime.now()),
-                                    'profit': float(last_price) - stored_price,
-                                    'relative_profit_%': round((float(
-                                        last_price) - stored_price) / stored_price * 100, 3),
+                                    'profit': f'{float(last_price) - stored_price}',
+                                    'relative_profit_%': (float(last_price) - stored_price) / stored_price * 100,
                                     'id': 'test-order',
                                     'text': 'test-order',
                                     'create_time': datetime.timestamp(datetime.now()),
