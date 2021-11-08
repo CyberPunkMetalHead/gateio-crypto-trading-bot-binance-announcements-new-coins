@@ -231,7 +231,7 @@ def main():
                                 sold_coins[coin] = sell.__dict__
                                 sold_coins[coin].pop("local_vars_configuration")
                                 sold_coins[coin]['profit'] = f'{float(last_price) - stored_price}'
-                                sold_coins[coin]['relative_profit_%'] = (float(last_price) - stored_price) / stored_price * 100
+                                sold_coins[coin]['relative_profit_%'] = f'{(float(last_price) - stored_price) / stored_price * 100}%'
 
                                 
                                 # add to session orders
@@ -249,7 +249,7 @@ def main():
                                     'volume': volume,
                                     'time': datetime.timestamp(datetime.now()),
                                     'profit': f'{float(last_price) - stored_price}',
-                                    'relative_profit_%': (float(last_price) - stored_price) / stored_price * 100,
+                                    'relative_profit_%': f'{(float(last_price) - stored_price) / stored_price * 100}%'
                                     'id': 'test-order',
                                     'text': 'test-order',
                                     'create_time': datetime.timestamp(datetime.now()),
@@ -432,13 +432,16 @@ def main():
                                 if order_status == "cancelled" and float(order[announcement_coin]['_amount']) > float(order[announcement_coin]['_left']) and float(order[announcement_coin]['_left']) > 0:
                                     # partial order. Change qty and fee_total
                                     partial_amount = float(order[announcement_coin]['_amount']) - float(order[announcement_coin]['_left'])
+                                    partial_fee = float(order[announcement_coin]['_fee'])
                                     order[announcement_coin]['_amount_filled'] = f'{partial_amount}'
                                     session[announcement_coin]['total_volume'] = session[announcement_coin]['total_volume'] + (partial_amount * float(order[announcement_coin]['_price']))
                                     session[announcement_coin]['total_amount'] = session[announcement_coin]['total_amount'] + partial_amount
-                                    session[announcement_coin]['total_fees'] = session[announcement_coin]['total_fees'] + float(order[announcement_coin]['_fee'])
+                                    session[announcement_coin]['total_fees'] = session[announcement_coin]['total_fees'] + partial_fee
 
                                     session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
+                                    logger.info(f"Parial fill order detected.  {order_status=} | {partial_amount=} out of {amount=} | {partial_fee=} | {price=}")
 
+                                logger.info(f"clearing order with a status of {order_status}.  Waiting for 'closed' status")
                                 order.clear()  # reset for next iteration
                         
                             
