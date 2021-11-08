@@ -66,7 +66,7 @@ def get_coins_by_accouncement_text(latest_announcement, pairing):
 
 
 
-def get_new_listing_coin(pairing, new_listings):
+def get_newly_listed_coin(pairing, new_listings):
     logger.debug("Pulling announcement page for [adds + trading pairs] or [will list] scenarios")
 
     if len(new_listings) == 0:
@@ -141,7 +141,7 @@ def search_gateio_and_update(pairing, new_listings):
     count = 59
     while not globals.stop_threads:
         
-        latest_coins = get_new_listing_coin(pairing, new_listings)
+        latest_coins = get_newly_listed_coin(pairing, new_listings)
         if latest_coins:
             try:
                 #ready = is_currency_trade_ready(latest_coins[0], pairing)
