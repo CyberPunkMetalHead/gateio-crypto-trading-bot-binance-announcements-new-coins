@@ -163,13 +163,14 @@ def main():
                             stored_price * coin_sl / 100) or float(last_price) > stored_price + (
                             stored_price * coin_tp / 100) and not enable_tsl:
                         try:
+                            fees = float(order[coin]['_fee'])
+                            sell_volume_adjusted = float(volume) - fees
 
-                            logger.info(f'starting sell place_order with :{symbol} | {pairing} | {volume} | {float(volume)*float(last_price)} | side=sell | last={last_price}')
-
+                            logger.info(f'starting sell place_order with :{symbol} | {pairing} | {volume} | {sell_volume_adjusted} | {fees} | {float(sell_volume_adjusted)*float(last_price)} | side=sell | last={last_price}')
 
                             # sell for real if test mode is set to false
                             if not test_mode:
-                                sell = place_order(symbol, pairing, float(volume)*float(last_price), 'sell', last_price)
+                                sell = place_order(symbol, pairing, float(sell_volume_adjusted)*float(last_price), 'sell', last_price)
 
                                 #check for completed sell order
                                 if sell._status != 'closed':
@@ -179,14 +180,16 @@ def main():
 
                                     # change order to sell remaing
                                     if float(sell._left) > 0 and float(sell._amount) > float(sell._left):
+                                        # adjust down order _amount and _fee
                                         order[coin]['_amount'] = sell._left
+                                        order[coin]['_fee'] = f'{fees - (float(sell._fee) / float(sell._price))}'
                                     
-                                        # store sell order in whatever state as "coin_id" if any 
+                                        # add sell order sold.json (handled better in session.json now)
                                         id = f"{coin}_{id}"
                                         sold_coins[id] = sell
                                         sold_coins[id] = sell.__dict__
                                         sold_coins[id].pop("local_vars_configuration")
-                                        logger.info(f"Sell order did not close! {sell._left} remaining. Perform sell again")
+                                        logger.info(f"Sell order did not close! {sell._left} of {coin} remaining. Adjusted order _amount and _fee to perform sell of remaining balance")
 
                                         # add to session orders
                                         try:
@@ -197,6 +200,7 @@ def main():
                                             print(e)
                                         pass
                                     
+                                    # keep going.  Not finished until status is 'closed'
                                     continue
                                 
                                 logger.debug(f"Finish sell place_order {sell}")
