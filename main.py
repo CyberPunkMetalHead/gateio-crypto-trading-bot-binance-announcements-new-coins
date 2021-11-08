@@ -103,6 +103,11 @@ def main():
             if len(order) > 0:
                 for coin in list(order):
                     
+                    if float(order[coin]['_tp']) == 0:
+                        st = order[coin]['_status']
+                        logger.info(f"Order is initialized but not ready | Status={st}")
+                        continue
+
                     # store some necessary trade info for a sell
                     coin_tp = order[coin]['_tp']
                     coin_sl = order[coin]['_sl']
