@@ -5,7 +5,6 @@ auth/auth.yml
 order.json
 sold.json
 new_listing.json
-newly_listed.json
 session.json
 
 # Ignore bot log
@@ -25,3 +24,4 @@ config.yml
 test_order.py
 
 
+.idea
