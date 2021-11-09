@@ -205,14 +205,6 @@ def main():
                                 sold_coins[coin]['profit'] = f'{float(last_price) - stored_price}'
                                 sold_coins[coin]['relative_profit_%'] = f'{(float(last_price) - stored_price) / stored_price * 100}%'
 
-                                # add to session orders
-                                try: 
-                                    if len(session) > 0:
-                                        dp = copy.deepcopy(sold_coins[coin])
-                                        session[coin]['orders'].append(dp)
-                                except Exception as e:
-                                    print(e)
-                                    pass
                             else:
                                 sold_coins[coin] = {
                                     'symbol': coin,
@@ -236,12 +228,22 @@ def main():
                                 
                                 logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
 
+                            
+                            # add to session orders
+                            try: 
+                                if len(session) > 0:
+                                    dp = copy.deepcopy(sold_coins[coin])
+                                    session[coin]['orders'].append(dp)
+                                    store_order('session.json', session)
+                                    logger.debug('Session saved in session.json')
+                            except Exception as e:
+                                print(e)
+                                pass
+                            
                             store_order('sold.json', sold_coins)
                             logger.info('Order saved in sold.json')
+                            
                                 
-                            if len(session) > 0:
-                                store_order('session.json', session)
-                                logger.debug('Session saved in session.json')
 
             # the buy block and logic pass
             # announcement_coin = load_order('new_listing.json')
@@ -280,6 +282,8 @@ def main():
                         
                         # initalize order object
                         if announcement_coin not in order:
+                            volume = volume - session[announcement_coin]['total_volume']    
+                            
                             order[announcement_coin] = {}
                             order[announcement_coin]['_amount'] = f'{volume / float(price)}'
                             order[announcement_coin]['_left'] = f'{volume / float(price)}'
@@ -296,7 +300,6 @@ def main():
                         amount = float(order[announcement_coin]['_amount'])
                         left = float(order[announcement_coin]['_left'])
                         status = order[announcement_coin]['_status']
-                        volume = volume - session[announcement_coin]['total_volume']
 
                         if left - amount != 0:
                             # partial fill. 
@@ -392,11 +395,12 @@ def main():
                                     session[announcement_coin]['total_fees'] = session[announcement_coin]['total_fees'] + partial_fee
 
                                     session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
+
                                     logger.info(f"Parial fill order detected.  {order_status=} | {partial_amount=} out of {amount=} | {partial_fee=} | {price=}")
-                                else:
-                                    # order not filled, try again.
-                                    logger.info(f"clearing order with a status of {order_status}.  Waiting for 'closed' status")
-                                    order.clear()  # reset for next iteration
+                                
+                                # order not filled, try again.
+                                logger.info(f"clearing order with a status of {order_status}.  Waiting for 'closed' status")
+                                order.clear()  # reset for next iteration
                         
                             
                     else:
