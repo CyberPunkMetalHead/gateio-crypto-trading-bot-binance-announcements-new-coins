@@ -1,7 +1,6 @@
 ---
   TRADE_OPTIONS:
     # In your pairing coin
-    # DO NOT DISABLE TSL!!!! YOUR BOT WILL NOT SELL
     QUANTITY: 15
     # BTCUSDT will be bought for example
     PAIRING: USDT
@@ -12,8 +11,7 @@
     ENABLE_TSL: True
     TSL: -4
     TTP: 2
-    ENABLE_SMS: False
-  LOGGING:
+   LOGGING:
     # Logging levels used in this program are ERROR, INFO, and DEBUG
     LOG_LEVEL: INFO
     LOG_FILE: bot.log

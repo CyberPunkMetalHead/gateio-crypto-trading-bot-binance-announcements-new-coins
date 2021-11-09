@@ -1,6 +1,5 @@
 # Ignore creds file
 auth/auth.yml
-auth/auth_twilio.yml
 
 # Ignore orders
 order.json
@@ -25,7 +24,4 @@ config.yml
 # Ignore test file
 test_order.py
 
-# Ignore log backups
-backups/
-logs/
 

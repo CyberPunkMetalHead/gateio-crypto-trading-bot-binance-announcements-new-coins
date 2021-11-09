@@ -10,16 +10,6 @@ client = load_gateio_creds('auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
 import json
 
-def is_currency_trade_ready(base, quote): 
-    try:
-        cur = spot_api.get_currency_pair(currency_pair=f'{base}_{quote}')
-        assert cur and cur.trade_status == 'tradable'
-        return True
-    except Exception as e:
-        pass
-
-    return False
-
 
 
 def get_last_price(base,quote, return_price_only):
@@ -61,30 +51,6 @@ def place_order(base,quote, amount, side, last_price):
         order = spot_api.create_order(order)
         t = order
         logger.info(f"PLACE ORDER: {t.side} | {t.id} | {t.account} | {t.type} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price} | fee={t.fee} {t.fee_currency}")
-    except Exception as e:
-        logger.error(e)
-        raise
-
-    else:
-        return order
-
-
-def get_order(id,base,quote):
-    try:
-        t = spot_api.get_order(id, currency_pair=f'{base}_{quote}')
-        logger.info(f"GET ORDER: {id=} | {t.account} | {t.type} | {t.side} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price}")
-    except Exception as e:
-        logger.error(e)
-        return False
-    else:
-        return t
-
-def cancel_open_order(id, base, quote):
-    
-    try:
-        order = spot_api.cancel_order(id, currency_pair=f'{base}_{quote}')
-        t = order
-        logger.info(f"CANCEL ORDER: {t.id=} | {t.account} | {t.type} | {t.side} | {t.currency_pair} | {t.status} | amount={t.amount} | price={t.price} | left={t.left} | filled_total={t.filled_total} | fill_price={t.fill_price}")
     except Exception as e:
         logger.error(e)
         raise
