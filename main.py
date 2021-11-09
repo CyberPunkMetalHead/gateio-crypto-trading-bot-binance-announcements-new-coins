@@ -254,8 +254,6 @@ def main():
 
             global supported_currencies
 
-            announcement_coin = "LINK"
-
             if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
                 logger.info(f'New announcement detected: {announcement_coin}')
                 if not supported_currencies:
