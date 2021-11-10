@@ -312,11 +312,11 @@ def main():
                                 if order[announcement_coin]['_status'] == 'cancelled':
                                     status = 'closed'
                                     left = 0
-                                    fee = f'{float(amount) * .02}'
+                                    fee = f'{float(amount) * .002}'
                                 else:
                                     status = 'cancelled'
                                     left = f'{amount *.66}'
-                                    fee = f'{float(amount - float(left)) * .02}'
+                                    fee = f'{float(amount - float(left)) * .002}'
 
                                 order[announcement_coin] = {
                                     '_fee_currency': announcement_coin,
