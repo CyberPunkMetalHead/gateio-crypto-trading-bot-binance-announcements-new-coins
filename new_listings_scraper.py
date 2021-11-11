@@ -152,10 +152,13 @@ def get_all_currencies(single=False):
 
 
 def load_old_coins():
-    with open('old_coins.json') as json_file:
-        data = json.load(json_file)
-        logger.debug("Loaded old_coins from file")
-        return data
+    if os.path.isfile('old_coins.json'):
+        with open('old_coins.json') as json_file:
+            data = json.load(json_file)
+            logger.debug("Loaded old_coins from file")
+            return data
+    else:
+        return {}
 
 
 def store_old_coins(old_coin_list):
