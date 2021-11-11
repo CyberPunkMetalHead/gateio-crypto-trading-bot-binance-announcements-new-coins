@@ -160,5 +160,5 @@ def load_old_coins():
 
 def store_old_coins(old_coin_list):
     with open('old_coins.json', 'w') as f:
-        json.dump(old_coin_list, f)
+        json.dump(old_coin_list, f, indent=2)
         logger.debug('Wrote old_coins to file')
