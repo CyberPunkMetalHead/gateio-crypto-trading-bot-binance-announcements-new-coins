@@ -10,8 +10,9 @@ session.json
 # Ignore bot log
 bot.log
 
-# Ignore currency list
+# Ignore currency list and old coins
 currencies.json
+old_coins.json
 
 # Ignore pycache
 __pycache__/
@@ -24,4 +25,4 @@ config.yml
 test_order.py
 
 
-.idea
+.idea/
