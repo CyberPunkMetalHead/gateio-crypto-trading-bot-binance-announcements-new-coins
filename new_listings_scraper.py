@@ -20,6 +20,7 @@ spot_api = SpotApi(ApiClient(client))
 
 global supported_currencies
 
+previously_found_coins = set()
 
 def get_announcement():
     """
@@ -66,11 +67,13 @@ def get_last_coin():
 
     uppers = None
 
-    if 'Will List' not in latest_announcement or found_coin[0] == existing_coin:
+    if 'Will List' not in latest_announcement or found_coin[0] == existing_coin or \
+            found_coin[0] in previously_found_coins:
         return None
     else:
         if len(found_coin) == 1:
             uppers = found_coin[0]
+            previously_found_coins.add(uppers)
             logger.info('New coin detected: ' + uppers)
         if len(found_coin) != 1:
             uppers = None

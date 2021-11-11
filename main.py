@@ -223,7 +223,6 @@ def main():
                                     'account': 'spot',
                                     'side': 'sell',
                                     'iceberg': '0',
-                                    'price': last_price
                                     }
                                 
                                 logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
@@ -399,12 +398,11 @@ def main():
                                 # order not filled, try again.
                                 logger.info(f"clearing order with a status of {order_status}.  Waiting for 'closed' status")
                                 order.clear()  # reset for next iteration
-                        
-                            
                     else:
                         logger.warning(f'{announcement_coin=} is not supported on gate io')
                         if os.path.isfile('new_listing.json'):
                             os.remove("new_listing.json")
+                        old_coins.append(announcement_coin)
                         logger.debug('Removed new_listing.json due to coin not being '
                                     'listed on gate io')
                 else:
@@ -412,7 +410,7 @@ def main():
             else:
                 logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
-            time.sleep(1)
+            time.sleep(3)
 
 
             # except Exception as e:
