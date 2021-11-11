@@ -158,7 +158,7 @@ def load_old_coins():
             logger.debug("Loaded old_coins from file")
             return data
     else:
-        return {}
+        return []
 
 
 def store_old_coins(old_coin_list):
