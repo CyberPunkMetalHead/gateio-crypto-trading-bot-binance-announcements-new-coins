@@ -195,7 +195,10 @@ def buy():
 
                             store_order('order.json', order)
                             store_order('session.json', session)
-                            globals.buy_ready.clear() # We're done buying. Waiting for the next coin
+
+                            # We're done. Stop buying and finish up the selling.
+                            globals.sell_ready.set() 
+                            globals.buy_ready.clear()
                         else:
                             if order_status == "cancelled" and float(order[announcement_coin]['_amount']) > float(order[announcement_coin]['_left']) and float(order[announcement_coin]['_left']) > 0:
                                 # partial order. Change qty and fee_total in order and finish any remaining balance
@@ -209,6 +212,7 @@ def buy():
                                 session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
 
                                 logger.info(f"Partial fill order detected.  {order_status=} | {partial_amount=} out of {amount=} | {partial_fee=} | {price=}")
+                                globals.sell_ready.set() # Ready to start selling
                             
                             # order not filled, try again.
                             logger.info(f"Clearing order with a status of {order_status}.  Waiting for 'closed' status")
@@ -315,7 +319,7 @@ def sell():
                             #check for completed sell order
                             if sell._status != 'closed':
 
-                                # change order to sell remaing
+                                # change order to sell remaining
                                 if float(sell._left) > 0 and float(sell._amount) > float(sell._left):
                                     # adjust down order _amount and _fee
                                     order[coin]['_amount'] = sell._left
@@ -346,6 +350,7 @@ def sell():
                         order.pop(coin)
                         store_order('order.json', order)
                         logger.debug('Order saved in order.json')
+                        globals.sell_ready.clear()
 
                     except Exception as e:
                         logger.error(e)
@@ -418,28 +423,21 @@ def main():
     if not globals.test_mode:
         logger.info(f'!!! LIVE MODE !!!')
 
-    t = threading.Thread(target=search_and_update)
-    t.start()
-
-    t2 = threading.Thread(target=get_all_currencies)
-    t2.start()
-
+    t_get_currencies_thread = threading.Thread(target=get_all_currencies)
+    t_get_currencies_thread.start()
     t_buy_thread = threading.Thread(target=buy)
     t_buy_thread.start()
     t_sell_thread = threading.Thread(target=sell)
     t_sell_thread.start()
 
     try:
-        while True:
-
-            time.sleep(3)
-
+        search_and_update()
     except KeyboardInterrupt:
         logger.info('Stopping Threads')
         globals.stop_threads = True
         globals.buy_ready.set()
-        t.join()
-        t2.join()
+        globals.sell_ready.set()
+        t_get_currencies_thread.join()
         t_buy_thread.join()
         t_sell_thread.join()
 
