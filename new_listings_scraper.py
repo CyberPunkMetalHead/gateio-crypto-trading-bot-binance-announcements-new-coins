@@ -118,6 +118,10 @@ def search_and_update():
             latest_coin = get_last_coin()
             if latest_coin:
                 store_new_listing(latest_coin)
+            elif globals.test_mode:
+                if os.path.isfile('test_new_listing.json'):
+                    store_new_listing("BTC")
+
 
             logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
         except Exception as e:

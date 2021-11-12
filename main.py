@@ -63,9 +63,15 @@ def buy():
             break
         # the buy block and logic pass
         if os.path.isfile('new_listing.json'):
+            logger.debug('loading coin from new_listing.json')
             announcement_coin = load_order('new_listing.json')
         else:
             announcement_coin = False
+
+        logger.debug(f"order: {order}")
+        logger.debug(f"sold_coins: {sold_coins}")
+        logger.debug(f"old_coins: {globals.old_coins}")
+
 
         global supported_currencies
         if announcement_coin and \
