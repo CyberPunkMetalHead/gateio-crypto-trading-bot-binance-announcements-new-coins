@@ -54,23 +54,198 @@ supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
 
 
+def buy():
+    while not globals.stop_threads:
+        logger.debug('Waiting for buy_ready event')
+        globals.buy_ready.wait()
+        logger.debug('buy_ready event triggered')
+        globals.buy_ready.clear()
+        if globals.stop_threads:
+            break
+        # the buy block and logic pass
+        # announcement_coin = load_order('new_listing.json')
+        if os.path.isfile('new_listing.json'):
+            announcement_coin = load_order('new_listing.json')
+        else:
+            announcement_coin = False
+
+        global supported_currencies
+        if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and \
+                announcement_coin not in globals.old_coins:
+            logger.info(f'New announcement detected: {announcement_coin}')
+            if not supported_currencies:
+                supported_currencies = get_all_currencies(single=True)
+            if supported_currencies:
+                if announcement_coin in supported_currencies:
+                    logger.debug("Starting get_last_price")
+                    
+                    # get latest price object
+                    obj = get_last_price(announcement_coin, globals.pairing, False)
+                    price = obj.last
+
+                    if float(price) == 0:
+                        continue # wait for positive price
+
+                    if announcement_coin not in session:
+                        session[announcement_coin] = {}
+                        session[announcement_coin].update({'total_volume': 0})
+                        session[announcement_coin].update({'total_amount': 0})
+                        session[announcement_coin].update({'total_fees': 0})
+                        session[announcement_coin]['orders'] = list()
+                    
+                    # initalize order object
+                    if announcement_coin not in order:
+                        volume = globals.quantity - session[announcement_coin]['total_volume']    
+                        
+                        order[announcement_coin] = {}
+                        order[announcement_coin]['_amount'] = f'{volume / float(price)}'
+                        order[announcement_coin]['_left'] = f'{volume / float(price)}'
+                        order[announcement_coin]['_fee'] = f'{0}'
+                        order[announcement_coin]['_tp'] = f'{0}'
+                        order[announcement_coin]['_sl'] = f'{0}'
+                        order[announcement_coin]['_status'] = 'unknown'
+                        if announcement_coin in session:
+                            if len(session[announcement_coin]['orders']) == 0:
+                                order[announcement_coin]['_status'] = 'test_partial_fill_order'
+                            else:
+                                order[announcement_coin]['_status'] = 'cancelled'
+
+                    amount = float(order[announcement_coin]['_amount'])
+                    left = float(order[announcement_coin]['_left'])
+                    status = order[announcement_coin]['_status']
+
+                    if left - amount != 0:
+                        # partial fill. 
+                        amount = left
+                    
+                    logger.info(f'starting buy place_order with : {announcement_coin=} | {globals.pairing=} | {volume=} | {amount=} x {price=} | side = buy | {status=}')
+
+                    try:
+                        # Run a test trade if true
+                        if globals.test_mode:
+                            if order[announcement_coin]['_status'] == 'cancelled':
+                                status = 'closed'
+                                left = 0
+                                fee = f'{float(amount) * .002}'
+                            else:
+                                status = 'cancelled'
+                                left = f'{amount *.66}'
+                                fee = f'{float(amount - float(left)) * .002}'
+
+                            order[announcement_coin] = {
+                                '_fee_currency': announcement_coin,
+                                '_price': f'{price}',
+                                '_amount': f'{amount}',
+                                '_time': datetime.timestamp(datetime.now()),
+                                '_tp': globals.tp,
+                                '_sl': globals.sl,
+                                '_ttp': globals.ttp,
+                                '_tsl': globals.tsl,
+                                '_id': 'test-order',
+                                '_text': 'test-order',
+                                '_create_time': datetime.timestamp(datetime.now()),
+                                '_update_time': datetime.timestamp(datetime.now()),
+                                '_currency_pair': f'{announcement_coin}_{globals.pairing}',
+                                '_status': status,
+                                '_type': 'limit',
+                                '_account': 'spot',
+                                '_side': 'buy',
+                                '_iceberg': '0',
+                                '_left': f'{left}',
+                                '_fee': fee
+                            }
+                            logger.info('PLACING TEST ORDER')
+                            logger.info(order[announcement_coin])
+                        # place a live order if False
+                        else:
+                            # just in case...stop buying more than our config amount
+                            assert amount * float(price) <= float(volume)
+
+                            order[announcement_coin] = place_order(announcement_coin, globals.pairing, volume,'buy', price)
+                            order[announcement_coin] = order[announcement_coin].__dict__
+                            order[announcement_coin].pop("local_vars_configuration")
+                            order[announcement_coin]['_tp'] = globals.tp
+                            order[announcement_coin]['_sl'] = globals.sl
+                            order[announcement_coin]['_ttp'] = globals.ttp
+                            order[announcement_coin]['_tsl'] = globals.tsl
+                            logger.debug('Finished buy place_order')
+
+                    except Exception as e:
+                        logger.error(e)
+
+                    else:
+                        order_status = order[announcement_coin]['_status']
+
+                        message = f'Order created on {announcement_coin} at a price of {price} each.  {order_status=}'
+                        logger.info(message)
+
+                        if order_status == "closed":
+                            order[announcement_coin]['_amount_filled'] = order[announcement_coin]['_amount']
+                            session[announcement_coin]['total_volume'] = session[announcement_coin]['total_volume'] + (float(order[announcement_coin]['_amount']) * float(order[announcement_coin]['_price']))
+                            session[announcement_coin]['total_amount'] = session[announcement_coin]['total_amount'] + float(order[announcement_coin]['_amount'])
+                            session[announcement_coin]['total_fees'] = session[announcement_coin]['total_fees'] + float(order[announcement_coin]['_fee'])
+                            session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
+
+                            # update order to sum all amounts and all fees
+                            # this will set up our sell order for sale of all filled buy orders
+                            tf = session[announcement_coin]['total_fees']
+                            ta = session[announcement_coin]['total_amount']
+                            order[announcement_coin]['_fee'] = f'{tf}'
+                            order[announcement_coin]['_amount'] = f'{ta}'
+
+                            store_order('order.json', order)
+                            store_order('session.json', session)
+                        else:
+                            if order_status == "cancelled" and float(order[announcement_coin]['_amount']) > float(order[announcement_coin]['_left']) and float(order[announcement_coin]['_left']) > 0:
+                                # partial order. Change qty and fee_total in order and finish any remaining balance
+                                partial_amount = float(order[announcement_coin]['_amount']) - float(order[announcement_coin]['_left'])
+                                partial_fee = float(order[announcement_coin]['_fee'])
+                                order[announcement_coin]['_amount_filled'] = f'{partial_amount}'
+                                session[announcement_coin]['total_volume'] = session[announcement_coin]['total_volume'] + (partial_amount * float(order[announcement_coin]['_price']))
+                                session[announcement_coin]['total_amount'] = session[announcement_coin]['total_amount'] + partial_amount
+                                session[announcement_coin]['total_fees'] = session[announcement_coin]['total_fees'] + partial_fee
+
+                                session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
+
+                                logger.info(f"Parial fill order detected.  {order_status=} | {partial_amount=} out of {amount=} | {partial_fee=} | {price=}")
+                            
+                            # order not filled, try again.
+                            logger.info(f"clearing order with a status of {order_status}.  Waiting for 'closed' status")
+                            order.clear()  # reset for next iteration
+                else:
+                    logger.warning(f'{announcement_coin=} is not supported on gate io')
+                    if os.path.isfile('new_listing.json'):
+                        os.remove("new_listing.json")
+                    globals.old_coins.append(announcement_coin)
+                    store_old_coins(globals.old_coins)
+                    logger.info(f"Adding {announcement_coin} to old_coins.json")
+                    logger.debug('Removed new_listing.json due to coin not being listed on gate io')
+            else:
+                logger.error('supported_currencies is not initialized')
+        else:
+            logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
+
+
+
 def main():
     """
     Sells, adjusts TP and SL according to trailing values
     and buys new coins
     """
     # store config deets
-    tp = config['TRADE_OPTIONS']['TP']
-    sl = config['TRADE_OPTIONS']['SL']
-    enable_tsl = config['TRADE_OPTIONS']['ENABLE_TSL']
-    tsl = config['TRADE_OPTIONS']['TSL']
-    ttp = config['TRADE_OPTIONS']['TTP']
-    pairing = config['TRADE_OPTIONS']['PAIRING']
-    test_mode = config['TRADE_OPTIONS']['TEST']
+    globals.quantity = config['TRADE_OPTIONS']['QUANTITY']
+    globals.tp = config['TRADE_OPTIONS']['TP']
+    globals.sl = config['TRADE_OPTIONS']['SL']
+    globals.enable_tsl = config['TRADE_OPTIONS']['ENABLE_TSL']
+    globals.tsl = config['TRADE_OPTIONS']['TSL']
+    globals.ttp = config['TRADE_OPTIONS']['TTP']
+    globals.pairing = config['TRADE_OPTIONS']['PAIRING']
+    globals.test_mode = config['TRADE_OPTIONS']['TEST']
 
     globals.stop_threads = False
+    globals.buy_ready.clear()
 
-    if not test_mode:
+    if not globals.test_mode:
         logger.info(f'!!! LIVE MODE !!!')
 
     t = threading.Thread(target=search_and_update)
@@ -78,6 +253,9 @@ def main():
 
     t2 = threading.Thread(target=get_all_currencies)
     t2.start()
+
+    t_buy_thread = threading.Thread(target=buy)
+    t_buy_thread.start()
 
     try:
         while True:
@@ -106,7 +284,7 @@ def main():
                     logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
 
                     logger.info(f'get_last_price existing coin: {coin}')
-                    obj = get_last_price(symbol, pairing, False)
+                    obj = get_last_price(symbol, globals.pairing, False)
                     last_price = obj.last
                     logger.info("Finished get_last_price")
 
@@ -121,14 +299,14 @@ def main():
 
                     # update stop loss and take profit values if threshold is reached
                     if float(last_price) > stored_price + (
-                            stored_price * coin_tp / 100) and enable_tsl:
+                            stored_price * coin_tp / 100) and globals.enable_tsl:
                         # increase as absolute value for TP
-                        new_tp = float(last_price) + (float(last_price) * ttp / 100)
+                        new_tp = float(last_price) + (float(last_price) * globals.ttp / 100)
                         # convert back into % difference from when the coin was bought
                         new_tp = float((new_tp - stored_price) / stored_price * 100)
 
                         # same deal as above, only applied to trailing SL
-                        new_sl = float(last_price) + (float(last_price)*tsl / 100)
+                        new_sl = float(last_price) + (float(last_price)*globals.tsl / 100)
                         new_sl = float((new_sl - stored_price) / stored_price * 100)
 
                         # new values to be added to the json file
@@ -146,16 +324,16 @@ def main():
                     # close trade if tsl is reached or trail option is not enabled
                     elif float(last_price) < stored_price + (
                             stored_price * coin_sl / 100) or float(last_price) > stored_price + (
-                            stored_price * coin_tp / 100) and not enable_tsl:
+                            stored_price * coin_tp / 100) and not globals.enable_tsl:
                         try:
                             fees = float(order[coin]['_fee'])
                             sell_volume_adjusted = float(volume) - fees
 
-                            logger.info(f'starting sell place_order with :{symbol} | {pairing} | {volume} | {sell_volume_adjusted} | {fees} | {float(sell_volume_adjusted)*float(last_price)} | side=sell | last={last_price}')
+                            logger.info(f'starting sell place_order with :{symbol} | {globals.pairing} | {volume} | {sell_volume_adjusted} | {fees} | {float(sell_volume_adjusted)*float(last_price)} | side=sell | last={last_price}')
 
                             # sell for real if test mode is set to false
-                            if not test_mode:
-                                sell = place_order(symbol, pairing, float(sell_volume_adjusted)*float(last_price), 'sell', last_price)
+                            if not globals.test_mode:
+                                sell = place_order(symbol, globals.pairing, float(sell_volume_adjusted)*float(last_price), 'sell', last_price)
                                 logger.info("Finish sell place_order")
 
 
@@ -199,7 +377,7 @@ def main():
 
                         # store sold trades data
                         else:
-                            if not test_mode:
+                            if not globals.test_mode:
                                 sold_coins[coin] = sell
                                 sold_coins[coin] = sell.__dict__
                                 sold_coins[coin].pop("local_vars_configuration")
@@ -218,7 +396,7 @@ def main():
                                     'text': 'test-order',
                                     'create_time': datetime.timestamp(datetime.now()),
                                     'update_time': datetime.timestamp(datetime.now()),
-                                    'currency_pair': f'{symbol}_{pairing}',
+                                    'currency_pair': f'{symbol}_{globals.pairing}',
                                     'status': 'closed',
                                     'type': 'limit',
                                     'account': 'spot',
@@ -243,182 +421,15 @@ def main():
                             store_order('sold.json', sold_coins)
                             logger.info('Order saved in sold.json')
 
-
-            # the buy block and logic pass
-            # announcement_coin = load_order('new_listing.json')
-            if os.path.isfile('new_listing.json'):
-                announcement_coin = load_order('new_listing.json')
-            else:
-                announcement_coin = False
-
-            global supported_currencies
-
-            if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and \
-                    announcement_coin not in globals.old_coins:
-                logger.info(f'New announcement detected: {announcement_coin}')
-                if not supported_currencies:
-                    supported_currencies = get_all_currencies(single=True)
-                if supported_currencies:
-                    if announcement_coin in supported_currencies:
-                        logger.debug("Starting get_last_price")
-                        
-                        # get latest price object
-                        obj = get_last_price(announcement_coin, pairing, False)
-                        price = obj.last
-
-                        if float(price) == 0:
-                            continue # wait for positive price
-
-                        volume = config['TRADE_OPTIONS']['QUANTITY']
-                        
-                        if announcement_coin not in session:
-                            session[announcement_coin] = {}
-                            session[announcement_coin].update({'total_volume': 0})
-                            session[announcement_coin].update({'total_amount': 0})
-                            session[announcement_coin].update({'total_fees': 0})
-                            session[announcement_coin]['orders'] = list()
-                        
-                        # initalize order object
-                        if announcement_coin not in order:
-                            volume = volume - session[announcement_coin]['total_volume']    
-                            
-                            order[announcement_coin] = {}
-                            order[announcement_coin]['_amount'] = f'{volume / float(price)}'
-                            order[announcement_coin]['_left'] = f'{volume / float(price)}'
-                            order[announcement_coin]['_fee'] = f'{0}'
-                            order[announcement_coin]['_tp'] = f'{0}'
-                            order[announcement_coin]['_sl'] = f'{0}'
-                            order[announcement_coin]['_status'] = 'unknown'
-                            if announcement_coin in session:
-                                if len(session[announcement_coin]['orders']) == 0:
-                                    order[announcement_coin]['_status'] = 'test_partial_fill_order'
-                                else:
-                                    order[announcement_coin]['_status'] = 'cancelled'
-
-                        amount = float(order[announcement_coin]['_amount'])
-                        left = float(order[announcement_coin]['_left'])
-                        status = order[announcement_coin]['_status']
-
-                        if left - amount != 0:
-                            # partial fill. 
-                            amount = left
-                        
-                        logger.info(f'starting buy place_order with : {announcement_coin=} | {pairing=} | {volume=} | {amount=} x {price=} | side = buy | {status=}')
-
-                        try:
-                            # Run a test trade if true
-                            if config['TRADE_OPTIONS']['TEST']:
-                                
-                                if order[announcement_coin]['_status'] == 'cancelled':
-                                    status = 'closed'
-                                    left = 0
-                                    fee = f'{float(amount) * .002}'
-                                else:
-                                    status = 'cancelled'
-                                    left = f'{amount *.66}'
-                                    fee = f'{float(amount - float(left)) * .002}'
-
-                                order[announcement_coin] = {
-                                    '_fee_currency': announcement_coin,
-                                    '_price': f'{price}',
-                                    '_amount': f'{amount}',
-                                    '_time': datetime.timestamp(datetime.now()),
-                                    '_tp': tp,
-                                    '_sl': sl,
-                                    '_ttp': ttp,
-                                    '_tsl': tsl,
-                                    '_id': 'test-order',
-                                    '_text': 'test-order',
-                                    '_create_time': datetime.timestamp(datetime.now()),
-                                    '_update_time': datetime.timestamp(datetime.now()),
-                                    '_currency_pair': f'{announcement_coin}_{pairing}',
-                                    '_status': status,
-                                    '_type': 'limit',
-                                    '_account': 'spot',
-                                    '_side': 'buy',
-                                    '_iceberg': '0',
-                                    '_left': f'{left}',
-                                    '_fee': fee
-                                }
-                                logger.info('PLACING TEST ORDER')
-                                logger.info(order[announcement_coin])
-                            # place a live order if False
-                            else:
-                                # just in case...stop buying more than our config amount
-                                assert amount * float(price) <= float(volume)
-
-                                order[announcement_coin] = place_order(announcement_coin, pairing, volume,'buy', price)
-                                order[announcement_coin] = order[announcement_coin].__dict__
-                                order[announcement_coin].pop("local_vars_configuration")
-                                order[announcement_coin]['_tp'] = tp
-                                order[announcement_coin]['_sl'] = sl
-                                order[announcement_coin]['_ttp'] = ttp
-                                order[announcement_coin]['_tsl'] = tsl
-                                logger.debug('Finished buy place_order')
-
-                        except Exception as e:
-                            logger.error(e)
-
-                        else:
-                            order_status = order[announcement_coin]['_status']
-
-                            message = f'Order created on {announcement_coin} at a price of {price} each.  {order_status=}'
-                            logger.info(message)
-
-                            if order_status == "closed":
-                                order[announcement_coin]['_amount_filled'] = order[announcement_coin]['_amount']
-                                session[announcement_coin]['total_volume'] = session[announcement_coin]['total_volume'] + (float(order[announcement_coin]['_amount']) * float(order[announcement_coin]['_price']))
-                                session[announcement_coin]['total_amount'] = session[announcement_coin]['total_amount'] + float(order[announcement_coin]['_amount'])
-                                session[announcement_coin]['total_fees'] = session[announcement_coin]['total_fees'] + float(order[announcement_coin]['_fee'])
-                                session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
-
-                                # update order to sum all amounts and all fees
-                                # this will set up our sell order for sale of all filled buy orders
-                                tf = session[announcement_coin]['total_fees']
-                                ta = session[announcement_coin]['total_amount']
-                                order[announcement_coin]['_fee'] = f'{tf}'
-                                order[announcement_coin]['_amount'] = f'{ta}'
-
-                                store_order('order.json', order)
-                                store_order('session.json', session)
-                            else:
-                                if order_status == "cancelled" and float(order[announcement_coin]['_amount']) > float(order[announcement_coin]['_left']) and float(order[announcement_coin]['_left']) > 0:
-                                    # partial order. Change qty and fee_total in order and finish any remaining balance
-                                    partial_amount = float(order[announcement_coin]['_amount']) - float(order[announcement_coin]['_left'])
-                                    partial_fee = float(order[announcement_coin]['_fee'])
-                                    order[announcement_coin]['_amount_filled'] = f'{partial_amount}'
-                                    session[announcement_coin]['total_volume'] = session[announcement_coin]['total_volume'] + (partial_amount * float(order[announcement_coin]['_price']))
-                                    session[announcement_coin]['total_amount'] = session[announcement_coin]['total_amount'] + partial_amount
-                                    session[announcement_coin]['total_fees'] = session[announcement_coin]['total_fees'] + partial_fee
-
-                                    session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
-
-                                    logger.info(f"Parial fill order detected.  {order_status=} | {partial_amount=} out of {amount=} | {partial_fee=} | {price=}")
-                                
-                                # order not filled, try again.
-                                logger.info(f"clearing order with a status of {order_status}.  Waiting for 'closed' status")
-                                order.clear()  # reset for next iteration
-                    else:
-                        logger.warning(f'{announcement_coin=} is not supported on gate io')
-                        if os.path.isfile('new_listing.json'):
-                            os.remove("new_listing.json")
-                        globals.old_coins.append(announcement_coin)
-                        store_old_coins(globals.old_coins)
-                        logger.info(f"Adding {announcement_coin} to old_coins.json")
-                        logger.debug('Removed new_listing.json due to coin not being '
-                                     'listed on gate io')
-                else:
-                    logger.error('supported_currencies is not initialized')
-            else:
-                logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
-
             time.sleep(3)
 
     except KeyboardInterrupt:
         logger.info('Stopping Threads')
         globals.stop_threads = True
+        globals.buy_ready.set()
         t.join()
         t2.join()
+        t_buy_thread.join()
 
 
 if __name__ == '__main__':
