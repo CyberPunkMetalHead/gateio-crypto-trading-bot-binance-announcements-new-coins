@@ -227,6 +227,175 @@ def buy():
             logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
 
 
+def sell():
+    while not globals.stop_threads:
+        logger.debug('Waiting for sell_ready event')
+        globals.sell_ready.wait()
+        logger.debug('sell_ready event triggered')
+        if globals.stop_threads:
+            break
+        # check if the order file exists and load the current orders
+        # basically the sell block and update TP and SL logic
+        if len(order) > 0:
+            for coin in list(order):
+
+                if float(order[coin]['_tp']) == 0:
+                    st = order[coin]['_status']
+                    logger.Info(f"Order is initialized but not ready. Continuing. | Status={st}")
+                    continue
+
+                # store some necessary trade info for a sell
+                coin_tp = order[coin]['_tp']
+                coin_sl = order[coin]['_sl']
+
+                volume = order[coin]['_amount']
+                stored_price = float(order[coin]['_price'])
+                symbol = order[coin]['_fee_currency']
+
+                # avoid div by zero error
+                if float(stored_price) == 0:
+                    continue 
+
+                logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
+
+                logger.info(f'get_last_price existing coin: {coin}')
+                obj = get_last_price(symbol, globals.pairing, False)
+                last_price = obj.last
+                logger.info("Finished get_last_price")
+
+                top_position_price = stored_price + (stored_price*coin_tp /100)
+                stop_loss_price = stored_price + (stored_price*coin_sl /100)
+
+                # need positive price or continue and wait
+                if float(last_price) == 0:
+                    continue
+
+                logger.info(f'{symbol=}-{last_price=}\t[STOP: ${"{:,.5f}".format(stop_loss_price)} or {"{:,.2f}".format(coin_sl)}%]\t[TOP: ${"{:,.5f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]\t[BUY: ${"{:,.5f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]')
+
+                # update stop loss and take profit values if threshold is reached
+                if float(last_price) > stored_price + (
+                        stored_price * coin_tp / 100) and globals.enable_tsl:
+                    # increase as absolute value for TP
+                    new_tp = float(last_price) + (float(last_price) * globals.ttp / 100)
+                    # convert back into % difference from when the coin was bought
+                    new_tp = float((new_tp - stored_price) / stored_price * 100)
+
+                    # same deal as above, only applied to trailing SL
+                    new_sl = float(last_price) + (float(last_price)*globals.tsl / 100)
+                    new_sl = float((new_sl - stored_price) / stored_price * 100)
+
+                    # new values to be added to the json file
+                    order[coin]['_tp'] = new_tp
+                    order[coin]['_sl'] = new_sl
+                    store_order('order.json', order)
+
+                    new_top_position_price = stored_price + (stored_price*new_tp /100)
+                    new_stop_loss_price = stored_price + (stored_price*new_sl /100)
+
+                    logger.info(f'updated tp: {round(new_tp, 3)}% / ${"{:,.3f}".format(new_top_position_price)}')
+                    logger.info(f'updated sl: {round(new_sl, 3)}% / ${"{:,.3f}".format(new_stop_loss_price)}')
+
+
+                # close trade if tsl is reached or trail option is not enabled
+                elif float(last_price) < stored_price + (
+                        stored_price * coin_sl / 100) or float(last_price) > stored_price + (
+                        stored_price * coin_tp / 100) and not globals.enable_tsl:
+                    try:
+                        fees = float(order[coin]['_fee'])
+                        sell_volume_adjusted = float(volume) - fees
+
+                        logger.info(f'starting sell place_order with :{symbol} | {globals.pairing} | {volume} | {sell_volume_adjusted} | {fees} | {float(sell_volume_adjusted)*float(last_price)} | side=sell | last={last_price}')
+
+                        # sell for real if test mode is set to false
+                        if not globals.test_mode:
+                            sell = place_order(symbol, globals.pairing, float(sell_volume_adjusted)*float(last_price), 'sell', last_price)
+                            logger.info("Finish sell place_order")
+
+
+                            #check for completed sell order
+                            if sell._status != 'closed':
+
+                                # change order to sell remaing
+                                if float(sell._left) > 0 and float(sell._amount) > float(sell._left):
+                                    # adjust down order _amount and _fee
+                                    order[coin]['_amount'] = sell._left
+                                    order[coin]['_fee'] = f'{fees - (float(sell._fee) / float(sell._price))}'
+                                
+                                    # add sell order sold.json (handled better in session.json now)
+                                    id = f"{coin}_{id}"
+                                    sold_coins[id] = sell
+                                    sold_coins[id] = sell.__dict__
+                                    sold_coins[id].pop("local_vars_configuration")
+                                    logger.info(f"Sell order did not close! {sell._left} of {coin} remaining. Adjusted order _amount and _fee to perform sell of remaining balance")
+
+                                    # add to session orders
+                                    try:
+                                        if len(session) > 0:
+                                            dp = copy.deepcopy(sold_coins[id])
+                                            session[coin]['orders'].append(dp)
+                                    except Exception as e:
+                                        print(e)
+                                    pass
+                                
+                                # keep going.  Not finished until status is 'closed'
+                                continue
+                            
+                        logger.info(f'sold {coin} with {round((float(last_price) - stored_price) * float(volume), 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL')
+
+                        # remove order from json file
+                        order.pop(coin)
+                        store_order('order.json', order)
+                        logger.debug('Order saved in order.json')
+
+                    except Exception as e:
+                        logger.error(e)
+
+                    # store sold trades data
+                    else:
+                        if not globals.test_mode:
+                            sold_coins[coin] = sell
+                            sold_coins[coin] = sell.__dict__
+                            sold_coins[coin].pop("local_vars_configuration")
+                            sold_coins[coin]['profit'] = f'{float(last_price) - stored_price}'
+                            sold_coins[coin]['relative_profit_%'] = f'{(float(last_price) - stored_price) / stored_price * 100}%'
+
+                        else:
+                            sold_coins[coin] = {
+                                'symbol': coin,
+                                'price': last_price,
+                                'volume': volume,
+                                'time': datetime.timestamp(datetime.now()),
+                                'profit': f'{float(last_price) - stored_price}',
+                                'relative_profit_%': f'{(float(last_price) - stored_price) / stored_price * 100}%',
+                                'id': 'test-order',
+                                'text': 'test-order',
+                                'create_time': datetime.timestamp(datetime.now()),
+                                'update_time': datetime.timestamp(datetime.now()),
+                                'currency_pair': f'{symbol}_{globals.pairing}',
+                                'status': 'closed',
+                                'type': 'limit',
+                                'account': 'spot',
+                                'side': 'sell',
+                                'iceberg': '0',
+                                }
+                            
+                            logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
+
+
+                        # add to session orders
+                        try: 
+                            if len(session) > 0:
+                                dp = copy.deepcopy(sold_coins[coin])
+                                session[coin]['orders'].append(dp)
+                                store_order('session.json', session)
+                                logger.debug('Session saved in session.json')
+                        except Exception as e:
+                            print(e)
+                            pass
+                        
+                        store_order('sold.json', sold_coins)
+                        logger.info('Order saved in sold.json')
+
 
 def main():
     """
@@ -257,170 +426,11 @@ def main():
 
     t_buy_thread = threading.Thread(target=buy)
     t_buy_thread.start()
+    t_sell_thread = threading.Thread(target=sell)
+    t_sell_thread.start()
 
     try:
         while True:
-            # check if the order file exists and load the current orders
-            # basically the sell block and update TP and SL logic
-            if len(order) > 0:
-                for coin in list(order):
-
-                    if float(order[coin]['_tp']) == 0:
-                        st = order[coin]['_status']
-                        logger.Info(f"Order is initialized but not ready. Continuing. | Status={st}")
-                        continue
-
-                    # store some necessary trade info for a sell
-                    coin_tp = order[coin]['_tp']
-                    coin_sl = order[coin]['_sl']
-
-                    volume = order[coin]['_amount']
-                    stored_price = float(order[coin]['_price'])
-                    symbol = order[coin]['_fee_currency']
-
-                    # avoid div by zero error
-                    if float(stored_price) == 0:
-                        continue 
-
-                    logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
-
-                    logger.info(f'get_last_price existing coin: {coin}')
-                    obj = get_last_price(symbol, globals.pairing, False)
-                    last_price = obj.last
-                    logger.info("Finished get_last_price")
-
-                    top_position_price = stored_price + (stored_price*coin_tp /100)
-                    stop_loss_price = stored_price + (stored_price*coin_sl /100)
-
-                    # need positive price or continue and wait
-                    if float(last_price) == 0:
-                        continue
-
-                    logger.info(f'{symbol=}-{last_price=}\t[STOP: ${"{:,.5f}".format(stop_loss_price)} or {"{:,.2f}".format(coin_sl)}%]\t[TOP: ${"{:,.5f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]\t[BUY: ${"{:,.5f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]')
-
-                    # update stop loss and take profit values if threshold is reached
-                    if float(last_price) > stored_price + (
-                            stored_price * coin_tp / 100) and globals.enable_tsl:
-                        # increase as absolute value for TP
-                        new_tp = float(last_price) + (float(last_price) * globals.ttp / 100)
-                        # convert back into % difference from when the coin was bought
-                        new_tp = float((new_tp - stored_price) / stored_price * 100)
-
-                        # same deal as above, only applied to trailing SL
-                        new_sl = float(last_price) + (float(last_price)*globals.tsl / 100)
-                        new_sl = float((new_sl - stored_price) / stored_price * 100)
-
-                        # new values to be added to the json file
-                        order[coin]['_tp'] = new_tp
-                        order[coin]['_sl'] = new_sl
-                        store_order('order.json', order)
-
-                        new_top_position_price = stored_price + (stored_price*new_tp /100)
-                        new_stop_loss_price = stored_price + (stored_price*new_sl /100)
-
-                        logger.info(f'updated tp: {round(new_tp, 3)}% / ${"{:,.3f}".format(new_top_position_price)}')
-                        logger.info(f'updated sl: {round(new_sl, 3)}% / ${"{:,.3f}".format(new_stop_loss_price)}')
-
-
-                    # close trade if tsl is reached or trail option is not enabled
-                    elif float(last_price) < stored_price + (
-                            stored_price * coin_sl / 100) or float(last_price) > stored_price + (
-                            stored_price * coin_tp / 100) and not globals.enable_tsl:
-                        try:
-                            fees = float(order[coin]['_fee'])
-                            sell_volume_adjusted = float(volume) - fees
-
-                            logger.info(f'starting sell place_order with :{symbol} | {globals.pairing} | {volume} | {sell_volume_adjusted} | {fees} | {float(sell_volume_adjusted)*float(last_price)} | side=sell | last={last_price}')
-
-                            # sell for real if test mode is set to false
-                            if not globals.test_mode:
-                                sell = place_order(symbol, globals.pairing, float(sell_volume_adjusted)*float(last_price), 'sell', last_price)
-                                logger.info("Finish sell place_order")
-
-
-                                #check for completed sell order
-                                if sell._status != 'closed':
-
-                                    # change order to sell remaing
-                                    if float(sell._left) > 0 and float(sell._amount) > float(sell._left):
-                                        # adjust down order _amount and _fee
-                                        order[coin]['_amount'] = sell._left
-                                        order[coin]['_fee'] = f'{fees - (float(sell._fee) / float(sell._price))}'
-                                    
-                                        # add sell order sold.json (handled better in session.json now)
-                                        id = f"{coin}_{id}"
-                                        sold_coins[id] = sell
-                                        sold_coins[id] = sell.__dict__
-                                        sold_coins[id].pop("local_vars_configuration")
-                                        logger.info(f"Sell order did not close! {sell._left} of {coin} remaining. Adjusted order _amount and _fee to perform sell of remaining balance")
-
-                                        # add to session orders
-                                        try:
-                                            if len(session) > 0:
-                                                dp = copy.deepcopy(sold_coins[id])
-                                                session[coin]['orders'].append(dp)
-                                        except Exception as e:
-                                            print(e)
-                                        pass
-                                    
-                                    # keep going.  Not finished until status is 'closed'
-                                    continue
-                                
-                            logger.info(f'sold {coin} with {round((float(last_price) - stored_price) * float(volume), 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL')
-
-                            # remove order from json file
-                            order.pop(coin)
-                            store_order('order.json', order)
-                            logger.debug('Order saved in order.json')
-
-                        except Exception as e:
-                            logger.error(e)
-
-                        # store sold trades data
-                        else:
-                            if not globals.test_mode:
-                                sold_coins[coin] = sell
-                                sold_coins[coin] = sell.__dict__
-                                sold_coins[coin].pop("local_vars_configuration")
-                                sold_coins[coin]['profit'] = f'{float(last_price) - stored_price}'
-                                sold_coins[coin]['relative_profit_%'] = f'{(float(last_price) - stored_price) / stored_price * 100}%'
-
-                            else:
-                                sold_coins[coin] = {
-                                    'symbol': coin,
-                                    'price': last_price,
-                                    'volume': volume,
-                                    'time': datetime.timestamp(datetime.now()),
-                                    'profit': f'{float(last_price) - stored_price}',
-                                    'relative_profit_%': f'{(float(last_price) - stored_price) / stored_price * 100}%',
-                                    'id': 'test-order',
-                                    'text': 'test-order',
-                                    'create_time': datetime.timestamp(datetime.now()),
-                                    'update_time': datetime.timestamp(datetime.now()),
-                                    'currency_pair': f'{symbol}_{globals.pairing}',
-                                    'status': 'closed',
-                                    'type': 'limit',
-                                    'account': 'spot',
-                                    'side': 'sell',
-                                    'iceberg': '0',
-                                    }
-                                
-                                logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
-
-
-                            # add to session orders
-                            try: 
-                                if len(session) > 0:
-                                    dp = copy.deepcopy(sold_coins[coin])
-                                    session[coin]['orders'].append(dp)
-                                    store_order('session.json', session)
-                                    logger.debug('Session saved in session.json')
-                            except Exception as e:
-                                print(e)
-                                pass
-                            
-                            store_order('sold.json', sold_coins)
-                            logger.info('Order saved in sold.json')
 
             time.sleep(3)
 
@@ -431,6 +441,7 @@ def main():
         t.join()
         t2.join()
         t_buy_thread.join()
+        t_sell_thread.join()
 
 
 if __name__ == '__main__':

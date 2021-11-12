@@ -1,6 +1,7 @@
 import threading
 
 buy_ready = threading.Event()
+sell_ready = threading.Event()
 stop_threads = False
 old_coins = {}
 
