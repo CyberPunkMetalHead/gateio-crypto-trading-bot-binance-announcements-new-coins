@@ -1,5 +1,6 @@
 import ast
 import os.path
+import os
 import random
 import re
 import string
@@ -119,9 +120,8 @@ def search_and_update():
             if latest_coin:
                 store_new_listing(latest_coin)
             elif globals.test_mode and os.path.isfile('test_new_listing.json'):
-                store_new_listing("LRC")
-
-
+                store_new_listing(load_order('test_new_listing.json'))
+                os.rename('test_new_listing.json','test_new_listing.json.used')
             logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
         except Exception as e:
             logger.info(e)
