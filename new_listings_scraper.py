@@ -121,7 +121,7 @@ def search_and_update():
                 store_new_listing(latest_coin)
             elif globals.test_mode and os.path.isfile('test_new_listing.json'):
                 store_new_listing(load_order('test_new_listing.json'))
-                if os.path.isfile('test_new_listing.json.used')
+                if os.path.isfile('test_new_listing.json.used'):
                     os.remove('test_new_listing.json.used')
                 os.rename('test_new_listing.json', 'test_new_listing.json.used')
             logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
