@@ -4,7 +4,7 @@ auth/auth.yml
 # Ignore orders
 order.json
 sold.json
-new_listing.json
+*new_listing.json*
 session.json
 
 # Ignore bot log
