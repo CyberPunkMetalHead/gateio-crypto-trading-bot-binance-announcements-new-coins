@@ -68,11 +68,6 @@ def buy():
         else:
             announcement_coin = False
 
-        logger.debug(f"order: {order}")
-        logger.debug(f"sold_coins: {sold_coins}")
-        logger.debug(f"old_coins: {globals.old_coins}")
-
-
         global supported_currencies
         if announcement_coin and \
                 announcement_coin not in order and \
@@ -218,7 +213,10 @@ def buy():
                                 session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
 
                                 logger.info(f"Partial fill order detected.  {order_status=} | {partial_amount=} out of {amount=} | {partial_fee=} | {price=}")
-                                globals.sell_ready.set() # Ready to start selling
+                                # FUTURE: We'll probably want to start attempting to sell in the future immediately after ordering any amount
+                                # It would require at least a minor refactor, since order is getting cleared and
+                                # it seems that this function depends on order being empty, but sell() depends on order not being empty.
+                                # globals.sell_ready.set()
                             
                             # order not filled, try again.
                             logger.info(f"Clearing order with a status of {order_status}.  Waiting for 'closed' status")
@@ -235,6 +233,7 @@ def buy():
                 logger.error('supported_currencies is not initialized')
         else:
             logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
+        time.sleep(.01)
 
 
 def sell():
@@ -406,6 +405,9 @@ def sell():
                         
                         store_order('sold.json', sold_coins)
                         logger.info('Order saved in sold.json')
+        else:
+            logger.debug("Size of order is 0")
+        time.sleep(.01)
 
 
 def main():
