@@ -14,7 +14,9 @@ from json import JSONEncoder
 import os.path
 import sys, os
 
-old_coins = ["OTHERCRAP"]
+# To add a coin to ignore, add it to the json array in old_coins.json
+globals.old_coins = load_old_coins()
+logger.debug(f"old_coins: {globals.old_coins}")
 
 # loads local configuration
 config = load_config('config.yml')
@@ -65,7 +67,6 @@ def main():
     ttp = config['TRADE_OPTIONS']['TTP']
     pairing = config['TRADE_OPTIONS']['PAIRING']
     test_mode = config['TRADE_OPTIONS']['TEST']
-
 
     globals.stop_threads = False
 
@@ -227,7 +228,7 @@ def main():
                                 
                                 logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
 
-                            
+
                             # add to session orders
                             try: 
                                 if len(session) > 0:
@@ -241,8 +242,7 @@ def main():
                             
                             store_order('sold.json', sold_coins)
                             logger.info('Order saved in sold.json')
-                            
-                                
+
 
             # the buy block and logic pass
             # announcement_coin = load_order('new_listing.json')
@@ -253,7 +253,8 @@ def main():
 
             global supported_currencies
 
-            if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and announcement_coin not in old_coins:
+            if announcement_coin and announcement_coin not in order and announcement_coin not in sold_coins and \
+                    announcement_coin not in globals.old_coins:
                 logger.info(f'New announcement detected: {announcement_coin}')
                 if not supported_currencies:
                     supported_currencies = get_all_currencies(single=True)
@@ -363,7 +364,6 @@ def main():
 
                             message = f'Order created on {announcement_coin} at a price of {price} each.  {order_status=}'
                             logger.info(message)
-                            
 
                             if order_status == "closed":
                                 order[announcement_coin]['_amount_filled'] = order[announcement_coin]['_amount']
@@ -402,9 +402,11 @@ def main():
                         logger.warning(f'{announcement_coin=} is not supported on gate io')
                         if os.path.isfile('new_listing.json'):
                             os.remove("new_listing.json")
-                        old_coins.append(announcement_coin)
+                        globals.old_coins.append(announcement_coin)
+                        store_old_coins(globals.old_coins)
+                        logger.info(f"Adding {announcement_coin} to old_coins.json")
                         logger.debug('Removed new_listing.json due to coin not being '
-                                    'listed on gate io')
+                                     'listed on gate io')
                 else:
                     logger.error('supported_currencies is not initialized')
             else:
@@ -412,9 +414,6 @@ def main():
 
             time.sleep(3)
 
-
-            # except Exception as e:
-            # print(e)
     except KeyboardInterrupt:
         logger.info('Stopping Threads')
         globals.stop_threads = True

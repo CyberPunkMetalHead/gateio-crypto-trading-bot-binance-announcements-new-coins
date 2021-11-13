@@ -22,6 +22,7 @@ global supported_currencies
 
 previously_found_coins = set()
 
+
 def get_announcement():
     """
     Retrieves new coin listing announcements
@@ -148,3 +149,19 @@ def get_all_currencies(single=False):
                     break
     else:
         logger.info("while True loop in get_all_currencies() has stopped.")
+
+
+def load_old_coins():
+    if os.path.isfile('old_coins.json'):
+        with open('old_coins.json') as json_file:
+            data = json.load(json_file)
+            logger.debug("Loaded old_coins from file")
+            return data
+    else:
+        return []
+
+
+def store_old_coins(old_coin_list):
+    with open('old_coins.json', 'w') as f:
+        json.dump(old_coin_list, f, indent=2)
+        logger.debug('Wrote old_coins to file')
