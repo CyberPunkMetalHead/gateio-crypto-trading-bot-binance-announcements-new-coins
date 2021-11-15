@@ -9,6 +9,7 @@ session.json
 
 # Ignore bot log
 bot.log
+/logs
 
 # Ignore currency list and old coins
 currencies.json
