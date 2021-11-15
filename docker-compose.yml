@@ -1,0 +1,11 @@
+version: "2"
+
+services:
+    binance_bot:
+        build: .
+        volumes:
+            - .:/usr/src/app
+        command: python main.py
+
+volumes:
+  data-volume:
