@@ -1,29 +1,29 @@
 # Ignore creds file
-auth/auth.yml
+*/**/auth/auth.yml
 
 # Ignore orders
-order.json
-sold.json
-new_listing.json
-session.json
+*/**/order.json
+*/**/sold.json
+*/**/new_listing.json
+*/**/session.json
 
 # Ignore bot log
-bot.log
-/logs
+*/bot.log
+*/**/logs
 
 # Ignore currency list and old coins
-currencies.json
-old_coins.json
+*/**/currencies.json
+*/**/old_coins.json
 
 # Ignore pycache
-__pycache__/
-auth/__pycache__/
+*/**/__pycache__/
+*/**/auth/__pycache__/
 
 # Ignore config
-config.yml
+*/**/config.yml
 
 # Ignore test file
-test_order.py
+*/**/test_order.py
 
 
 .idea/
