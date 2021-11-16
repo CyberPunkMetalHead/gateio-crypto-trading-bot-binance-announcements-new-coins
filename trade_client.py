@@ -7,7 +7,7 @@ from gate_api import ApiClient, Order, SpotApi
 client = load_gateio_creds('auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
 
-current_last_trade = None
+last_trade = None
 
 
 def get_last_price(base, quote, return_price_only):
@@ -15,26 +15,26 @@ def get_last_price(base, quote, return_price_only):
     Args:
     'DOT', 'USDT'
     """
-    global current_last_trade
+    global last_trade
     trades = spot_api.list_trades(currency_pair=f'{base}_{quote}', limit=1)
     assert len(trades) == 1
-    t = trades[0]
+    trade = trades[0]
 
-    create_time_ms = datetime.utcfromtimestamp(int(t.create_time_ms.split('.')[0]) / 1000)
+    create_time_ms = datetime.utcfromtimestamp(int(trade.create_time_ms.split('.')[0]) / 1000)
     create_time_formatted = create_time_ms.strftime('%d-%m-%y %H:%M:%S.%f')
 
-    if current_last_trade and current_last_trade.id > t.id:
+    if last_trade and last_trade.id > trade.id:
         logger.debug(f"STALE TRADEBOOK RESULT FOUND. RE-TRYING.")
         return get_last_price(base=base, quote=quote, return_price_only=return_price_only)
     else:
-        current_last_trade = t
+        last_trade = trade
 
     if return_price_only:
-        return t.price
+        return trade.price
 
-    logger.info(f"LATEST TRADE: {t.currency_pair} | id={t.id} | create_time={create_time_formatted} | "
-                f"side={t.side} | amount={t.amount} | price={t.price}")
-    return t
+    logger.info(f"LATEST TRADE: {trade.currency_pair} | id={trade.id} | create_time={create_time_formatted} | "
+                f"side={trade.side} | amount={trade.amount} | price={trade.price}")
+    return trade
 
 
 def get_min_amount(base, quote):
