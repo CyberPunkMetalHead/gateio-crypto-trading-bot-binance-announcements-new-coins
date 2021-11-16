@@ -24,7 +24,7 @@ def get_last_price(base, quote, return_price_only):
     create_time_formatted = create_time_ms.strftime('%d-%m-%y %H:%M:%S.%f')
 
     if current_last_trade and current_last_trade.id > t.id:
-        logger.debug(f"CACHED TRADEBOOK RESULT FOUND. RE-TRYING.")
+        logger.debug(f"STALE TRADEBOOK RESULT FOUND. RE-TRYING.")
         return get_last_price(base=base, quote=quote, return_price_only=return_price_only)
     else:
         current_last_trade = t
@@ -32,7 +32,7 @@ def get_last_price(base, quote, return_price_only):
     if return_price_only:
         return t.price
 
-    logger.info(f"LATEST TRADE: {t.currency_pair} | id={t.id} | create_time%={create_time_formatted} | "
+    logger.info(f"LATEST TRADE: {t.currency_pair} | id={t.id} | create_time={create_time_formatted} | "
                 f"side={t.side} | amount={t.amount} | price={t.price}")
     return t
 
