@@ -107,7 +107,7 @@ def main():
 
                     logger.info(f'get_last_price existing coin: {coin}')
                     obj = get_last_price(symbol, pairing, False)
-                    last_price = obj.last
+                    last_price = obj.price
                     logger.info("Finished get_last_price")
 
                     top_position_price = stored_price + (stored_price*coin_tp /100)
@@ -264,7 +264,7 @@ def main():
                         
                         # get latest price object
                         obj = get_last_price(announcement_coin, pairing, False)
-                        price = obj.last
+                        price = obj.price
 
                         if float(price) == 0:
                             continue # wait for positive price
