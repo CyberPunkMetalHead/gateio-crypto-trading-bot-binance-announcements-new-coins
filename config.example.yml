@@ -17,4 +17,3 @@
     LOG_LEVEL: INFO
     LOG_FILE: bot.log
     LOG_TO_CONSOLE: True
-    
