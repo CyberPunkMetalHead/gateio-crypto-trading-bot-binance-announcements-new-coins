@@ -23,10 +23,15 @@ if not os.path.exists(log_dir):
 # Get logging variables
 log_level = config['LOGGING']['LOG_LEVEL']
 log_file = config['LOGGING']['LOG_FILE']
+log_to_console = config['LOGGING']['LOG_TO_CONSOLE']
 
 file_handler = TimedRotatingFileHandler(log_path, when="midnight")
+handlers=[file_handler]
+if log_to_console:
+    handlers.append(logging.StreamHandler())
 log.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                handlers=[file_handler, logging.StreamHandler()])
+                handlers=handlers)
+
 logger = logging.getLogger(__name__)
 level = logging.getLevelName(log_level)
 logger.setLevel(level)
