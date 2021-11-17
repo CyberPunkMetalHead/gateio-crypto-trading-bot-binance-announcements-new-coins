@@ -26,7 +26,7 @@ log_file = config['LOGGING']['LOG_FILE']
 
 file_handler = TimedRotatingFileHandler(log_path, when="midnight")
 log.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
-                handlers=[file_handler, logging.StreamHandler()])
+                handlers=[file_handler])
 logger = logging.getLogger(__name__)
 level = logging.getLevelName(log_level)
 logger.setLevel(level)
