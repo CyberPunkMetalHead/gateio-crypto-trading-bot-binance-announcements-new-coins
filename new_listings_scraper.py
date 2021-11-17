@@ -1,5 +1,6 @@
 import ast
 import os.path
+import os
 import random
 import re
 import string
@@ -95,11 +96,12 @@ def store_new_listing(listing):
             file = listing
             store_order('new_listing.json', file)
             logger.info("New listing detected, updating file")
+            globals.buy_ready.set()
             return file
     else:
         new_listing = store_order('new_listing.json', listing)
         logger.info("File does not exist, creating file")
-
+        globals.buy_ready.set()
         return new_listing
 
 
@@ -117,12 +119,16 @@ def search_and_update():
             latest_coin = get_last_coin()
             if latest_coin:
                 store_new_listing(latest_coin)
-
+            elif globals.test_mode and os.path.isfile('test_new_listing.json'):
+                store_new_listing(load_order('test_new_listing.json'))
+                if os.path.isfile('test_new_listing.json.used'):
+                    os.remove('test_new_listing.json.used')
+                os.rename('test_new_listing.json', 'test_new_listing.json.used')
             logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
         except Exception as e:
             logger.info(e)
     else:
-        logger.info("while True loop in search_and_update() has stopped.")
+        logger.info("while loop in search_and_update() has stopped.")
 
 
 def get_all_currencies(single=False):
@@ -148,7 +154,7 @@ def get_all_currencies(single=False):
                 if globals.stop_threads:
                     break
     else:
-        logger.info("while True loop in get_all_currencies() has stopped.")
+        logger.info("while loop in get_all_currencies() has stopped.")
 
 
 def load_old_coins():
