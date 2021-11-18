@@ -21,3 +21,6 @@
     LOG_LEVEL: INFO
     LOG_FILE: bot.log
     LOG_TO_CONSOLE: True
+  TELEGRAM:
+    BOT_TOKEN: my_token
+    BOT_CHAT_ID: my_chat_id

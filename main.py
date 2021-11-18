@@ -6,6 +6,7 @@ from new_listings_scraper import *
 import globals
 from collections import defaultdict
 from datetime import datetime, time
+from send_telegram import *
 import time
 import threading
 import copy
@@ -47,6 +48,7 @@ logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
 
+send_telegram("new-coin-bot is online")
 
 def buy():
     while not globals.stop_threads:
@@ -62,7 +64,11 @@ def buy():
                 announcement_coin not in order and \
                 announcement_coin not in sold_coins and \
                 announcement_coin not in globals.old_coins:
-            logger.info(f'New announcement detected: {announcement_coin}')
+            
+            message = f'New announcement detected: {announcement_coin}'
+            logger.info(message)
+            send_telegram(message)
+
             if not supported_currencies:
                 supported_currencies = get_all_currencies(single=True)
             if supported_currencies:
@@ -108,7 +114,9 @@ def buy():
                         # partial fill. 
                         amount = left
                     
-                    logger.info(f'starting buy place_order with : {announcement_coin=} | {globals.pairing=} | {volume=} | {amount=} x {price=} | side = buy | {status=}')
+                    message = f'starting buy place_order with : {announcement_coin=} | {globals.pairing=} | {volume=} | {amount=} x {price=} | side = buy | {status=}'
+                    logger.info(message)
+                    send_telegram(message)
 
                     try:
                         # Run a test trade if true
@@ -168,6 +176,7 @@ def buy():
 
                         message = f'Order created on {announcement_coin} at a price of {price} each.  {order_status=}'
                         logger.info(message)
+                        send_telegram(message)
 
                         if order_status == "closed":
                             order[announcement_coin]['_amount_filled'] = order[announcement_coin]['_amount']
@@ -211,7 +220,9 @@ def buy():
                             logger.info(f"Clearing order with a status of {order_status}.  Waiting for 'closed' status")
                             order.pop(announcement_coin)  # reset for next iteration
                 else:
-                    logger.warning(f'{announcement_coin=} is not supported on gate io')
+                    message = f'{announcement_coin=} is not supported on gate io'
+                    logger.warning(message)
+                    send_telegram(message)
                     logger.info(f"Adding {announcement_coin} to old_coins.json")
                     globals.old_coins.append(announcement_coin)
                     store_old_coins(globals.old_coins)
@@ -335,7 +346,9 @@ def sell():
                                 # keep going.  Not finished until status is 'closed'
                                 continue
                             
-                        logger.info(f'sold {coin} with {round((float(last_price) - stored_price) * float(volume), 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL')
+                        message = f'sold {coin} with {round((float(last_price) - stored_price) * float(volume), 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL'
+                        logger.info(message)
+                        send_telegram(message)
 
                         # remove order from json file
                         order.pop(coin)
