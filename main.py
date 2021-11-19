@@ -38,12 +38,6 @@ if os.path.isfile('session.json'):
 else:
     session = {}
 
-if os.path.isfile('new_listing.json'):
-    announcement_coin = load_order('new_listing.json')
-else:
-    announcement_coin = False
-
-
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
 global supported_currencies
@@ -61,12 +55,7 @@ def buy():
         logger.debug('buy_ready event triggered')
         if globals.stop_threads:
             break
-        # the buy block and logic pass
-        if os.path.isfile('new_listing.json'):
-            logger.debug('loading coin from new_listing.json')
-            announcement_coin = load_order('new_listing.json')
-        else:
-            announcement_coin = False
+        announcement_coin = globals.latest_listing
 
         global supported_currencies
         if announcement_coin and \
@@ -223,12 +212,9 @@ def buy():
                             order.clear()  # reset for next iteration
                 else:
                     logger.warning(f'{announcement_coin=} is not supported on gate io')
-                    if os.path.isfile('new_listing.json'):
-                        os.remove("new_listing.json")
+                    logger.info(f"Adding {announcement_coin} to old_coins.json")
                     globals.old_coins.append(announcement_coin)
                     store_old_coins(globals.old_coins)
-                    logger.info(f"Adding {announcement_coin} to old_coins.json")
-                    logger.debug('Removed new_listing.json due to coin not being listed on gate io')
             else:
                 logger.error('supported_currencies is not initialized')
         else:
@@ -415,6 +401,12 @@ def main():
     Sells, adjusts TP and SL according to trailing values
     and buys new coins
     """
+
+    # Protection from stale announcement
+    latest_coin = get_last_coin()
+    if latest_coin:
+        globals.latest_listing = latest_coin
+
     # store config deets
     globals.quantity = config['TRADE_OPTIONS']['QUANTITY']
     globals.tp = config['TRADE_OPTIONS']['TP']

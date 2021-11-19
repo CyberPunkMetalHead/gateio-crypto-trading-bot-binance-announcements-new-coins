@@ -4,6 +4,7 @@ buy_ready = threading.Event()
 sell_ready = threading.Event()
 stop_threads = False
 old_coins = {}
+latest_listing = "BTC"
 
 #TRADE_OPTIONS config values
 quantity = 15
