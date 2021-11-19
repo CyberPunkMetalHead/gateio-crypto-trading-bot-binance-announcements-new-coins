@@ -61,15 +61,9 @@ def get_last_coin():
 
     found_coin = re.findall('\(([^)]+)', latest_announcement)
 
-    # pull existing coin if file exists
-    if os.path.isfile('new_listing.json'):
-        existing_coin = load_order('new_listing.json')
-    else:
-        existing_coin = None
-
     uppers = None
 
-    if 'Will List' not in latest_announcement or found_coin[0] == existing_coin or \
+    if 'Will List' not in latest_announcement or found_coin[0] == globals.latest_listing or \
             found_coin[0] in previously_found_coins:
         return None
     else:
@@ -87,22 +81,10 @@ def store_new_listing(listing):
     """
     Only store a new listing if different from existing value
     """
-
-    if os.path.isfile('new_listing.json'):
-        file = load_order('new_listing.json')
-        if listing in file:
-            return file
-        else:
-            file = listing
-            store_order('new_listing.json', file)
-            logger.info("New listing detected, updating file")
-            globals.buy_ready.set()
-            return file
-    else:
-        new_listing = store_order('new_listing.json', listing)
-        logger.info("File does not exist, creating file")
+    if listing and not listing == globals.latest_listing:
+        logger.info("New listing detected")
+        globals.latest_listing = listing 
         globals.buy_ready.set()
-        return new_listing
 
 
 def search_and_update():
