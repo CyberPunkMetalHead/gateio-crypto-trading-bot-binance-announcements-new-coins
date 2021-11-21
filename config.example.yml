@@ -1,16 +1,20 @@
 ---
   TRADE_OPTIONS:
-    # In your pairing coin
-    # DO NOT DISABLE TSL!!!! YOUR BOT WILL NOT SELL
+    # QUANTITY and PAIRING determine how much of your wallet value will be used to buy the new token.
+    # 'QUANTITY: 15' and 'PAIRING: USDT' means you will spend 15 USDT to buy XXX_USDT where XXX is the new token.
     QUANTITY: 15
-    # BTCUSDT will be bought for example
     PAIRING: USDT
+    # Test mode. No real money will be used.
     TEST: True
-    # In %
+    # Stop Loss in % of your buy value.
     SL: -3
+    # Take Profit in % of your buy value.
     TP: 2
+    # DO NOT DISABLE TSL!!!! YOUR BOT WILL NOT SELL
     ENABLE_TSL: True
+    # Trailing Stop Loss
     TSL: -4
+    # Trailing Take Profit
     TTP: 2
   LOGGING:
     # Logging levels used in this program are ERROR, INFO, and DEBUG
