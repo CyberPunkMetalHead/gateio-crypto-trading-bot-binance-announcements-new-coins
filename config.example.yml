@@ -24,9 +24,8 @@
   TELEGRAM:
     # set to True to enable telegram notifications
     ENABLED: False
-    # how to get a bot token: https://core.telegram.org/bots#6-botfather
+    # Getting a bot token: https://core.telegram.org/bots#6-botfather
     BOT_TOKEN: my_token
-    # how to get your chatID:
-    # find your bot and start a chat
-    # go visit https://api.telegram.org/bot%3CTOKEN%3E/getUpdates and find the chat ID
+    # Getting your chatID: find your bot and send a message,
+    # then go visit https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates and find the chat ID
     BOT_CHAT_ID: my_chat_id
