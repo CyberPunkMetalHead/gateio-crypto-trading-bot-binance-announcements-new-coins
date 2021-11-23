@@ -29,3 +29,14 @@
     # Getting your chatID: find your bot and send a message,
     # then go visit https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates and find the chat ID
     BOT_CHAT_ID: my_chat_id
+    # Disable / Enable specific notifications
+    NOTIFICATIONS:
+      STARTUP: True # welcome message
+      COIN_ANNOUNCEMENT: True # detected new announcement
+      COIN_NOT_SUPPORTED: True # coin is not on gate.io
+      BUY_START: True # when entering position
+      BUY_ORDER_CREATED: True # when buy order is created
+      BUY_FILLED: True # when the buy order got filled
+      SELL_START: True # when starting to sell      
+      SELL_FILLED: True # when sold
+      DEBUG: True # catch-all for debug messages

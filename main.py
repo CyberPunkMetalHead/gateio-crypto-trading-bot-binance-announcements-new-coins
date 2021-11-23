@@ -48,7 +48,7 @@ logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
 
-send_telegram("new-coin-bot is online")
+send_telegram("new-coin-bot is online", "STARTUP")
 
 def buy():
     while not globals.stop_threads:
@@ -67,7 +67,7 @@ def buy():
             
             message = f'New announcement detected: {announcement_coin}'
             logger.info(message)
-            send_telegram(message)
+            send_telegram(message, 'COIN_ANNOUNCEMENT')
 
             if not supported_currencies:
                 supported_currencies = get_all_currencies(single=True)
@@ -116,7 +116,7 @@ def buy():
                     
                     message = f'starting buy place_order with : {announcement_coin=} | {globals.pairing=} | {volume=} | {amount=} x {price=} | side = buy | {status=}'
                     logger.info(message)
-                    send_telegram(message)
+                    send_telegram(message, 'BUY_START')
 
                     try:
                         # Run a test trade if true
@@ -176,7 +176,7 @@ def buy():
 
                         message = f'Order created on {announcement_coin} at a price of {price} each.  {order_status=}'
                         logger.info(message)
-                        send_telegram(message)
+                        send_telegram(message, 'BUY_ORDER_CREATED')
 
                         if order_status == "closed":
                             order[announcement_coin]['_amount_filled'] = order[announcement_coin]['_amount']
@@ -198,6 +198,8 @@ def buy():
                             # We're done. Stop buying and finish up the selling.
                             globals.sell_ready.set() 
                             globals.buy_ready.clear()
+
+                            send_telegram(f'Order on {announcement_coin} closed', 'BUY_FILLED')                            
                         else:
                             if order_status == "cancelled" and float(order[announcement_coin]['_amount']) > float(order[announcement_coin]['_left']) and float(order[announcement_coin]['_left']) > 0:
                                 # partial order. Change qty and fee_total in order and finish any remaining balance
@@ -222,7 +224,7 @@ def buy():
                 else:
                     message = f'{announcement_coin=} is not supported on gate io'
                     logger.warning(message)
-                    send_telegram(message)
+                    send_telegram(message, 'COIN_NOT_SUPPORTED')
                     logger.info(f"Adding {announcement_coin} to old_coins.json")
                     globals.old_coins.append(announcement_coin)
                     store_old_coins(globals.old_coins)
@@ -310,7 +312,9 @@ def sell():
                         fees = float(order[coin]['_fee'])
                         sell_volume_adjusted = float(volume) - fees
 
-                        logger.info(f'starting sell place_order with :{symbol} | {globals.pairing} | {volume} | {sell_volume_adjusted} | {fees} | {float(sell_volume_adjusted)*float(last_price)} | side=sell | last={last_price}')
+                        message = f'starting sell place_order with :{symbol} | {globals.pairing} | {volume} | {sell_volume_adjusted} | {fees} | {float(sell_volume_adjusted)*float(last_price)} | side=sell | last={last_price}'
+                        logger.info(message)
+                        send_telegram(message, 'SELL_START')                        
 
                         # sell for real if test mode is set to false
                         if not globals.test_mode:
@@ -348,7 +352,7 @@ def sell():
                             
                         message = f'sold {coin} with {round((float(last_price) - stored_price) * float(volume), 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL'
                         logger.info(message)
-                        send_telegram(message)
+                        send_telegram(message, 'SELL_FILLED')
 
                         # remove order from json file
                         order.pop(coin)
