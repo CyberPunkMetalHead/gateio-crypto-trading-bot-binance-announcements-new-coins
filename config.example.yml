@@ -39,4 +39,3 @@
       BUY_FILLED: True # when the buy order got filled
       SELL_START: True # when starting to sell      
       SELL_FILLED: True # when sold
-      DEBUG: True # catch-all for debug messages
