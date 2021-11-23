@@ -22,10 +22,13 @@ else:
 
 def send_telegram(message):
 
+   # telegram is disabled, don't do anything
    if not telegram_enabled:
       return
 
+   logger.debug('TELEGRAM sending '+message)
    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + message   
+
    response = requests.get(send_text)
    if response.status_code != 200:
-      logger.error(f'failed to send telegram message: {response}')
+      logger.error(f'failed to send telegram message: {response.json()}')
