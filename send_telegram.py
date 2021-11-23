@@ -33,14 +33,15 @@ def send_telegram(message, key = 'DEBUG'):
    if not telegram_enabled:
       return
 
-   if key in config['TELEGRAM']['NOTIFICATIONS']:      
-      if config['TELEGRAM']['NOTIFICATIONS'][key]:
-         logger.debug(f'TELEGRAM sending {key} {message}')
-         send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + message   
-         response = requests.get(send_text)
-         if response.status_code != 200:
-            logger.error(f'failed to send telegram message: {response.json()}')
-   #    else:
-   #       logger.info(f'Telegram message key {key} is disabled, not sending {message}')
-   # else:
-   #    logger.info(f'Telegram message key {key} is not configured, not sending {message}')
+   # unknown message key
+   if not key in config['TELEGRAM']['NOTIFICATIONS']: 
+      return
+
+   # message key disabled
+   if not config['TELEGRAM']['NOTIFICATIONS'][key]:
+      return
+
+   send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + message   
+   response = requests.get(send_text)
+   if response.status_code != 200:
+      logger.error(f'failed to send telegram message: {response.json()}')
