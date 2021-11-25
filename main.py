@@ -91,7 +91,7 @@ def buy():
                     
                     # initalize order object
                     if announcement_coin not in order:
-                        volume = globals.quantity - session[announcement_coin]['total_volume']
+                        volume = globals.quantity - session[announcement_coin]['total_volume']    
                         
                         order[announcement_coin] = {}
                         order[announcement_coin]['_amount'] = f'{volume / float(price)}'
@@ -219,7 +219,7 @@ def buy():
                                 # It would require at least a minor refactor, since order is getting cleared and
                                 # it seems that this function depends on order being empty, but sell() depends on order not being empty.
                                 # globals.sell_ready.set()
-
+                            
                             # order not filled, try again.
                             logger.info(f"Clearing order with a status of {order_status}.  Waiting for 'closed' status")
                             order.pop(announcement_coin)  # reset for next iteration
@@ -299,11 +299,12 @@ def sell():
                     order[coin]['_sl'] = new_sl
                     store_order('order.json', order)
 
-                    new_top_position_price = stored_price + (stored_price*new_tp / 100)
-                    new_stop_loss_price = stored_price + (stored_price*new_sl / 100)
+                    new_top_position_price = stored_price + (stored_price*new_tp /100)
+                    new_stop_loss_price = stored_price + (stored_price*new_sl /100)
 
                     logger.info(f'updated tp: {round(new_tp, 3)}% / ${"{:,.3f}".format(new_top_position_price)}')
                     logger.info(f'updated sl: {round(new_sl, 3)}% / ${"{:,.3f}".format(new_stop_loss_price)}')
+
 
                 # close trade if tsl is reached or trail option is not enabled
                 elif float(last_price) < stored_price + (
@@ -323,7 +324,7 @@ def sell():
                             logger.info("Finish sell place_order")
 
 
-                            # check for completed sell order
+                            #check for completed sell order
                             if sell._status != 'closed':
 
                                 # change order to sell remaining
@@ -331,7 +332,7 @@ def sell():
                                     # adjust down order _amount and _fee
                                     order[coin]['_amount'] = sell._left
                                     order[coin]['_fee'] = f'{fees - (float(sell._fee) / float(sell._price))}'
-                                    
+
                                     # add sell order sold.json (handled better in session.json now)
                                     id = f"{coin}_{id}"
                                     sold_coins[id] = sell
@@ -347,7 +348,6 @@ def sell():
                                     except Exception as e:
                                         print(e)
                                     pass
-
                                 # keep going.  Not finished until status is 'closed'
                                 continue
 
@@ -391,12 +391,12 @@ def sell():
                                 'account': 'spot',
                                 'side': 'sell',
                                 'iceberg': '0',
-                            }
+                                }
 
                             logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
 
                         # add to session orders
-                        try:
+                        try: 
                             if len(session) > 0:
                                 dp = copy.deepcopy(sold_coins[coin])
                                 session[coin]['orders'].append(dp)
@@ -405,7 +405,7 @@ def sell():
                         except Exception as e:
                             print(e)
                             pass
-
+                        
                         store_order('sold.json', sold_coins)
                         logger.info('Order saved in sold.json')
         else:
