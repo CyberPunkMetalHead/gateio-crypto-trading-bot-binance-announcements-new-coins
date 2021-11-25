@@ -1,47 +1,48 @@
 import requests
-import os
-from logger import logger
+import logging
+import yaml
 from load_config import *
 
 config = load_config('config.yml')
 
-telegram_enabled = "ENABLED" in config['TELEGRAM'] and config['TELEGRAM']['ENABLED']
-
-if not telegram_enabled:
-   logger.info('Telegram is disabled')
-else:
-   if "BOT_TOKEN" in config['TELEGRAM'] and "BOT_CHAT_ID" in config['TELEGRAM']:
-      # read config
-      bot_token = config['TELEGRAM']['BOT_TOKEN']
-      bot_chatID = str(config['TELEGRAM']['BOT_CHAT_ID'])
-      logger.info('Telegram initialized')
-   else:
-      # bail when config is not supplied
-      logger.info('Telegram not configured -> disabled')
-      telegram_enabled = False
+with open('auth/auth.yml') as file:
+    try:
+        creds = yaml.load(file, Loader=yaml.FullLoader)
+        bot_token = creds['telegram_token']
+        bot_chatID = str(creds['telegram_chat_id'])
+        valid_auth = True
+    except KeyError:
+        valid_auth = False
+        pass
 
 
-def send_telegram(message, key = 'DEBUG'):
-   """
-   send_telegram sends a notification message to telegram
+class TelegramLogFilter(logging.Filter):
+    # filter for logRecords with TELEGRAM extra
+    def filter(self, record):
+        return hasattr(record, 'TELEGRAM')
 
-   :param message: the message to send
-   :param key: message key, allows enabling/disabling of specific messages, defaults to DEBUG
-   """ 
 
-   # telegram is disabled, don't do anything
-   if not telegram_enabled:
-      return
+class TelegramHandler(logging.Handler):
+    # log to telegram if the TELEGRAM extra matches an enabled key
+    def emit(self, record):
 
-   # unknown message key
-   if not key in config['TELEGRAM']['NOTIFICATIONS']: 
-      return
+        if not valid_auth:
+            return
 
-   # message key disabled
-   if not config['TELEGRAM']['NOTIFICATIONS'][key]:
-      return
+        key = getattr(record, 'TELEGRAM')
 
-   send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + message   
-   response = requests.get(send_text)
-   if response.status_code != 200:
-      logger.error(f'failed to send telegram message: {response.json()}')
+        # unknown message key
+        if not key in config['TELEGRAM']['NOTIFICATIONS']:
+            return
+
+        # message key disabled
+        if not config['TELEGRAM']['NOTIFICATIONS'][key]:
+            return
+
+        requests.get(
+            'https://api.telegram.org/bot'
+            + bot_token
+            + '/sendMessage?chat_id='
+            + bot_chatID
+            + '&parse_mode=Markdown&text='
+            + record.message)

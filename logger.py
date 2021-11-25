@@ -1,6 +1,7 @@
 import os
 import logging
 from load_config import *
+from send_telegram import *
 from logging.handlers import TimedRotatingFileHandler
 
 # loads local configuration
@@ -25,6 +26,11 @@ log_level = config['LOGGING']['LOG_LEVEL']
 log_file = config['LOGGING']['LOG_FILE']
 
 try:
+    log_telegram = config['TELEGRAM']['ENABLED']
+except KeyError:
+    pass
+
+try:
     log_to_console = config['LOGGING']['LOG_TO_CONSOLE']
 except KeyError:
     pass
@@ -33,6 +39,12 @@ file_handler = TimedRotatingFileHandler(log_path, when="midnight")
 handlers = [file_handler]
 if log_to_console:
     handlers.append(logging.StreamHandler())
+if log_telegram:
+    telegram_handler = TelegramHandler()
+    telegram_handler.addFilter(TelegramLogFilter())
+    telegram_handler.setLevel(logging.DEBUG)  # so that telegram can recieve any kind of log message
+    handlers.append(telegram_handler)
+
 log.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                 handlers=handlers)
 
