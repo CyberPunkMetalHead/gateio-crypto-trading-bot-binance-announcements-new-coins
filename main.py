@@ -12,8 +12,7 @@ import copy
 import json
 from json import JSONEncoder
 import os.path
-import sys
-import os
+import sys, os
 
 # To add a coin to ignore, add it to the json array in old_coins.json
 globals.old_coins = load_old_coins()
@@ -81,7 +80,7 @@ def buy():
                     price = obj.price
 
                     if float(price) <= 0:
-                        continue  # wait for positive price
+                        continue # wait for positive price
 
                     if announcement_coin not in session:
                         session[announcement_coin] = {}
@@ -89,11 +88,11 @@ def buy():
                         session[announcement_coin].update({'total_amount': 0})
                         session[announcement_coin].update({'total_fees': 0})
                         session[announcement_coin]['orders'] = list()
-
+                    
                     # initalize order object
                     if announcement_coin not in order:
                         volume = globals.quantity - session[announcement_coin]['total_volume']
-
+                        
                         order[announcement_coin] = {}
                         order[announcement_coin]['_amount'] = f'{volume / float(price)}'
                         order[announcement_coin]['_left'] = f'{volume / float(price)}'
@@ -112,7 +111,7 @@ def buy():
                     status = order[announcement_coin]['_status']
 
                     if left - amount != 0:
-                        # partial fill.
+                        # partial fill. 
                         amount = left
 
                     logger.info(
@@ -197,7 +196,7 @@ def buy():
                             store_order('session.json', session)
 
                             # We're done. Stop buying and finish up the selling.
-                            globals.sell_ready.set()
+                            globals.sell_ready.set() 
                             globals.buy_ready.clear()
 
                             logger.info(
@@ -265,7 +264,7 @@ def sell():
 
                 # avoid div by zero error
                 if float(stored_price) == 0:
-                    continue
+                    continue 
 
                 logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
 
@@ -274,8 +273,8 @@ def sell():
                 last_price = obj.price
                 logger.info("Finished get_last_price")
 
-                top_position_price = stored_price + (stored_price*coin_tp / 100)
-                stop_loss_price = stored_price + (stored_price*coin_sl / 100)
+                top_position_price = stored_price + (stored_price*coin_tp /100)
+                stop_loss_price = stored_price + (stored_price*coin_sl /100)
 
                 # need positive price or continue and wait
                 if float(last_price) == 0:
@@ -323,6 +322,7 @@ def sell():
                             sell = place_order(symbol, globals.pairing, float(sell_volume_adjusted)*float(last_price), 'sell', last_price)
                             logger.info("Finish sell place_order")
 
+
                             # check for completed sell order
                             if sell._status != 'closed':
 
@@ -331,7 +331,7 @@ def sell():
                                     # adjust down order _amount and _fee
                                     order[coin]['_amount'] = sell._left
                                     order[coin]['_fee'] = f'{fees - (float(sell._fee) / float(sell._price))}'
-
+                                    
                                     # add sell order sold.json (handled better in session.json now)
                                     id = f"{coin}_{id}"
                                     sold_coins[id] = sell
