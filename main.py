@@ -233,7 +233,7 @@ def buy():
             else:
                 logger.error('supported_currencies is not initialized')
         else:
-            logger.info('No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
+            logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
         time.sleep(.01)
 
 
@@ -348,9 +348,10 @@ def sell():
                                     except Exception as e:
                                         print(e)
                                     pass
+                                
                                 # keep going.  Not finished until status is 'closed'
                                 continue
-
+                            
                         logger.info(
                             f'sold {coin} with {round((float(last_price) - stored_price) * float(volume), 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL',
                             extra={'TELEGRAM':  'SELL_FILLED'})
@@ -392,8 +393,9 @@ def sell():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 }
-
+                            
                             logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
+
 
                         # add to session orders
                         try: 
