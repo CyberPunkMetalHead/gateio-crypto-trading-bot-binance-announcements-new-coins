@@ -41,8 +41,8 @@ if log_to_console:
     handlers.append(logging.StreamHandler())
 if log_telegram:
     telegram_handler = TelegramHandler()
-    telegram_handler.addFilter(TelegramLogFilter())
-    telegram_handler.setLevel(logging.DEBUG)  # so that telegram can recieve any kind of log message
+    telegram_handler.addFilter(TelegramLogFilter()) # only handle messages with extra: TELEGRAM
+    telegram_handler.setLevel(logging.NOTSET)  # so that telegram can recieve any kind of log message
     handlers.append(telegram_handler)
 
 log.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
