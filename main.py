@@ -209,7 +209,7 @@ def buy():
                             
                             # order not filled, try again.
                             logger.info(f"Clearing order with a status of {order_status}.  Waiting for 'closed' status")
-                            order.clear()  # reset for next iteration
+                            order.pop(announcement_coin)  # reset for next iteration
                 else:
                     logger.warning(f'{announcement_coin=} is not supported on gate io')
                     logger.info(f"Adding {announcement_coin} to old_coins.json")
