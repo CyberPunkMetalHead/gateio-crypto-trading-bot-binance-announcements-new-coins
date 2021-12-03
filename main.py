@@ -88,11 +88,11 @@ def buy():
                         session[announcement_coin].update({'total_amount': 0})
                         session[announcement_coin].update({'total_fees': 0})
                         session[announcement_coin]['orders'] = list()
-                    
+
                     # initalize order object
                     if announcement_coin not in order:
-                        volume = globals.quantity - session[announcement_coin]['total_volume']    
-                        
+                        volume = globals.quantity - session[announcement_coin]['total_volume']
+
                         order[announcement_coin] = {}
                         order[announcement_coin]['_amount'] = f'{volume / float(price)}'
                         order[announcement_coin]['_left'] = f'{volume / float(price)}'
@@ -111,12 +111,13 @@ def buy():
                     status = order[announcement_coin]['_status']
 
                     if left - amount != 0:
-                        # partial fill. 
+                        # partial fill.
                         amount = left
 
                     logger.info(
                         f'starting buy place_order with : {announcement_coin=} | {globals.pairing=} | {volume=} | {amount=} x {price=} | side = buy | {status=}',
                         extra={'TELEGRAM': 'BUY_START'})
+
 
                     try:
                         # Run a test trade if true
@@ -196,7 +197,7 @@ def buy():
                             store_order('session.json', session)
 
                             # We're done. Stop buying and finish up the selling.
-                            globals.sell_ready.set() 
+                            globals.sell_ready.set()
                             globals.buy_ready.clear()
 
                             logger.info(
@@ -219,7 +220,7 @@ def buy():
                                 # It would require at least a minor refactor, since order is getting cleared and
                                 # it seems that this function depends on order being empty, but sell() depends on order not being empty.
                                 # globals.sell_ready.set()
-                            
+
                             # order not filled, try again.
                             logger.info(f"Clearing order with a status of {order_status}.  Waiting for 'closed' status")
                             order.pop(announcement_coin)  # reset for next iteration
@@ -264,7 +265,7 @@ def sell():
 
                 # avoid div by zero error
                 if float(stored_price) == 0:
-                    continue 
+                    continue
 
                 logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
 
@@ -348,13 +349,14 @@ def sell():
                                     except Exception as e:
                                         print(e)
                                     pass
-                                
+
                                 # keep going.  Not finished until status is 'closed'
                                 continue
                             
                         logger.info(
                             f'sold {coin} with {round((float(last_price) - stored_price) * float(volume), 3)} profit | {round((float(last_price) - stored_price) / float(stored_price)*100, 3)}% PNL',
                             extra={'TELEGRAM':  'SELL_FILLED'})
+
 
                         # remove order from json file
                         order.pop(coin)
@@ -393,12 +395,12 @@ def sell():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 }
-                            
+
                             logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
 
 
                         # add to session orders
-                        try: 
+                        try:
                             if len(session) > 0:
                                 dp = copy.deepcopy(sold_coins[coin])
                                 session[coin]['orders'].append(dp)
@@ -407,7 +409,7 @@ def sell():
                         except Exception as e:
                             print(e)
                             pass
-                        
+
                         store_order('sold.json', sold_coins)
                         logger.info('Order saved in sold.json')
         else:
