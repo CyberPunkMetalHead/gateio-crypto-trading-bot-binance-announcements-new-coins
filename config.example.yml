@@ -22,3 +22,16 @@
     LOG_LEVEL: INFO
     LOG_FILE: bot.log
     LOG_TO_CONSOLE: True
+  TELEGRAM:
+    # set to True to enable telegram notifications
+    ENABLED: False
+    # Disable / Enable specific notifications
+    NOTIFICATIONS:
+      STARTUP: True # welcome message
+      COIN_ANNOUNCEMENT: True # detected new announcement
+      COIN_NOT_SUPPORTED: True # coin is not on gate.io
+      BUY_START: True # when entering position
+      BUY_ORDER_CREATED: True # when buy order is created
+      BUY_FILLED: True # when the buy order got filled
+      SELL_START: True # when starting to sell      
+      SELL_FILLED: True # when sold
