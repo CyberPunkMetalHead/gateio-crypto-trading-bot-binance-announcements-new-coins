@@ -7,6 +7,6 @@
   # Getting a bot token: https://core.telegram.org/bots#6-botfather
   # Getting your chatID: find your bot and send a message,
   # then go visit https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates and find the chat ID
-  telegram_token: my_token
-  telegram_chat_id: my_chat_id
+  telegram_token: "my_token"
+  telegram_chat_id: "my_chat_id"
   
