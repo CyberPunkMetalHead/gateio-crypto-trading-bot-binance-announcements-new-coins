@@ -15,7 +15,9 @@ from gate_api import ApiClient, SpotApi
 from auth.gateio_auth import *
 from logger import logger
 from store_order import *
+from load_config import *
 
+config = load_config('config.yml')
 client = load_gateio_creds('auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
 
@@ -53,19 +55,65 @@ def get_announcement():
     return latest_announcement['data']['catalogs'][0]['articles'][0]['title']
 
 
+def get_kucoin_announcement():
+    """
+    Retrieves new coin listing announcements from Kucoin
+
+    """
+    logger.debug("Pulling announcement page")
+    # Generate random query/params to help prevent caching
+    rand_page_size = random.randint(1, 200)
+    letters = string.ascii_letters
+    random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
+    random_number = random.randint(1, 99999999999999999999)
+    queries = ["page=1", f"pageSize={str(rand_page_size)}", "category=listing", "lang=en_US" , f"rnd={str(time.time())}",
+               f"{random_string}={str(random_number)}"]
+    random.shuffle(queries)
+    logger.debug(f"Queries: {queries}")
+    request_url = f"https://www.kucoin.com/_api/cms/articles?" \
+                  f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
+    latest_announcement = requests.get(request_url)
+    try:
+        logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+    except KeyError:
+        # No X-Cache header was found - great news, we're hitting the source.
+        pass
+
+    latest_announcement = latest_announcement.json()
+    logger.debug("Finished pulling announcement page")
+    return latest_announcement['items'][0]['title']
+
+
 def get_last_coin():
     """
      Returns new Symbol when appropriate
     """
+    # scan Binance Announcement
     latest_announcement = get_announcement()
 
-    found_coin = re.findall('\(([^)]+)', latest_announcement)
+    # enable Kucoin Announcements if True in config
+    if config['TRADE_OPTIONS']['KUCOIN_ANNOUNCEMENTS']:
+        logger.info('Kucoin announcements enabled, look for new Kucoin coins...')
+        kucoin_announcement = get_kucoin_announcement()
+        kucoin_coin = re.findall('\(([^)]+)', kucoin_announcement)
 
+    found_coin = re.findall('\(([^)]+)', latest_announcement)
     uppers = None
 
+    # returns nothing if it's an old coin or it's not an actual coin listing
     if 'Will List' not in latest_announcement or found_coin[0] == globals.latest_listing or \
             found_coin[0] in previously_found_coins:
-        return None
+
+        # if the latest Binance announcement is not a new coin listing, or the listing has already been returned, check kucoin
+        if config['TRADE_OPTIONS']['KUCOIN_ANNOUNCEMENTS'] and 'Gets Listed' in kucoin_announcement\
+        and kucoin_coin[0] != globals.latest_listing and kucoin_coin[0] not in previously_found_coins:
+            if len(kucoin_coin) == 1:
+                uppers = kucoin_coin[0]
+                previously_found_coins.add(uppers)
+                logger.info('New Kucoin coin detected: ' + uppers)
+            if len(kucoin_coin) != 1:
+                uppers = None
+
     else:
         if len(found_coin) == 1:
             uppers = found_coin[0]
@@ -74,6 +122,7 @@ def get_last_coin():
         if len(found_coin) != 1:
             uppers = None
     print(f'{uppers=}')
+
     return uppers
 
 
@@ -83,7 +132,7 @@ def store_new_listing(listing):
     """
     if listing and not listing == globals.latest_listing:
         logger.info("New listing detected")
-        globals.latest_listing = listing 
+        globals.latest_listing = listing
         globals.buy_ready.set()
 
 

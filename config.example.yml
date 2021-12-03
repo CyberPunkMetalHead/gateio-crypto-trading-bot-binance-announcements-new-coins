@@ -2,6 +2,7 @@
   TRADE_OPTIONS:
     # QUANTITY and PAIRING determine how much of your wallet value will be used to buy the new token.
     # 'QUANTITY: 15' and 'PAIRING: USDT' means you will spend 15 USDT to buy XXX_USDT where XXX is the new token.
+    KUCOIN_ANNOUNCEMENTS: False
     QUANTITY: 15
     PAIRING: USDT
     # Test mode. No real money will be used.
