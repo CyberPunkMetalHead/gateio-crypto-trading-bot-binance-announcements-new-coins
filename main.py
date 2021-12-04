@@ -235,7 +235,7 @@ def buy():
                 logger.error('supported_currencies is not initialized')
         else:
             logger.info( 'No coins announced, or coin has already been bought/sold. Checking more frequently in case TP and SL need updating')
-        time.sleep(.01)
+        time.sleep(3)
 
 
 def sell():
@@ -414,7 +414,7 @@ def sell():
                         logger.info('Order saved in sold.json')
         else:
             logger.debug("Size of order is 0")
-        time.sleep(.01)
+        time.sleep(3)
 
 
 def main():
