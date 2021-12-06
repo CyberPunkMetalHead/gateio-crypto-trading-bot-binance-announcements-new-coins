@@ -13,7 +13,7 @@ import requests
 from gate_api import ApiClient, SpotApi
 
 from auth.gateio_auth import *
-from logger import logger
+from logger import LOG_INFO, LOG_DEBUG 
 from store_order import *
 from load_config import *
 
@@ -31,7 +31,7 @@ def get_announcement():
     Retrieves new coin listing announcements
 
     """
-    logger.debug("Pulling announcement page")
+    LOG_DEBUG("Pulling announcement page")
     # Generate random query/params to help prevent caching
     rand_page_size = random.randint(1, 200)
     letters = string.ascii_letters
@@ -40,18 +40,18 @@ def get_announcement():
     queries = ["type=1", "catalogId=48", "pageNo=1", f"pageSize={str(rand_page_size)}", f"rnd={str(time.time())}",
                f"{random_string}={str(random_number)}"]
     random.shuffle(queries)
-    logger.debug(f"Queries: {queries}")
+    LOG_DEBUG(f"Queries: {queries}")
     request_url = f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query" \
                   f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     latest_announcement = requests.get(request_url)
     try:
-        logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+        LOG_DEBUG(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
     except KeyError:
         # No X-Cache header was found - great news, we're hitting the source.
         pass
 
     latest_announcement = latest_announcement.json()
-    logger.debug("Finished pulling announcement page")
+    LOG_DEBUG("Finished pulling announcement page")
     return latest_announcement['data']['catalogs'][0]['articles'][0]['title']
 
 
@@ -60,7 +60,7 @@ def get_kucoin_announcement():
     Retrieves new coin listing announcements from Kucoin
 
     """
-    logger.debug("Pulling announcement page")
+    LOG_DEBUG("Pulling announcement page")
     # Generate random query/params to help prevent caching
     rand_page_size = random.randint(1, 200)
     letters = string.ascii_letters
@@ -69,18 +69,18 @@ def get_kucoin_announcement():
     queries = ["page=1", f"pageSize={str(rand_page_size)}", "category=listing", "lang=en_US" , f"rnd={str(time.time())}",
                f"{random_string}={str(random_number)}"]
     random.shuffle(queries)
-    logger.debug(f"Queries: {queries}")
+    LOG_DEBUG(f"Queries: {queries}")
     request_url = f"https://www.kucoin.com/_api/cms/articles?" \
                   f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     latest_announcement = requests.get(request_url)
     try:
-        logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+        LOG_DEBUG(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
     except KeyError:
         # No X-Cache header was found - great news, we're hitting the source.
         pass
 
     latest_announcement = latest_announcement.json()
-    logger.debug("Finished pulling announcement page")
+    LOG_DEBUG("Finished pulling announcement page")
     return latest_announcement['items'][0]['title']
 
 
@@ -93,7 +93,7 @@ def get_last_coin():
 
     # enable Kucoin Announcements if True in config
     if config['TRADE_OPTIONS']['KUCOIN_ANNOUNCEMENTS']:
-        logger.info('Kucoin announcements enabled, look for new Kucoin coins...')
+        LOG_INFO('Kucoin announcements enabled, look for new Kucoin coins...')
         kucoin_announcement = get_kucoin_announcement()
         kucoin_coin = re.findall('\(([^)]+)', kucoin_announcement)
 
@@ -110,7 +110,7 @@ def get_last_coin():
             if len(kucoin_coin) == 1:
                 uppers = kucoin_coin[0]
                 previously_found_coins.add(uppers)
-                logger.info('New Kucoin coin detected: ' + uppers)
+                LOG_INFO('New Kucoin coin detected: ' + uppers)
             if len(kucoin_coin) != 1:
                 uppers = None
 
@@ -118,7 +118,7 @@ def get_last_coin():
         if len(found_coin) == 1:
             uppers = found_coin[0]
             previously_found_coins.add(uppers)
-            logger.info('New coin detected: ' + uppers)
+            LOG_INFO('New coin detected: ' + uppers)
         if len(found_coin) != 1:
             uppers = None
     print(f'{uppers=}')
@@ -131,7 +131,7 @@ def store_new_listing(listing):
     Only store a new listing if different from existing value
     """
     if listing and not listing == globals.latest_listing:
-        logger.info("New listing detected")
+        LOG_INFO("New listing detected")
         globals.latest_listing = listing
         globals.buy_ready.set()
 
@@ -155,11 +155,11 @@ def search_and_update():
                 if os.path.isfile('test_new_listing.json.used'):
                     os.remove('test_new_listing.json.used')
                 os.rename('test_new_listing.json', 'test_new_listing.json.used')
-            logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
+            LOG_INFO(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
         except Exception as e:
-            logger.info(e)
+            LOG_INFO(e)
     else:
-        logger.info("while loop in search_and_update() has stopped.")
+        LOG_INFO("while loop in search_and_update() has stopped.")
 
 
 def get_all_currencies(single=False):
@@ -169,12 +169,12 @@ def get_all_currencies(single=False):
     """
     global supported_currencies
     while not globals.stop_threads:
-        logger.info("Getting the list of supported currencies from gate io")
+        LOG_INFO("Getting the list of supported currencies from gate io")
         all_currencies = ast.literal_eval(str(spot_api.list_currencies()))
         currency_list = [currency['currency'] for currency in all_currencies]
         with open('currencies.json', 'w') as f:
             json.dump(currency_list, f, indent=4)
-            logger.info("List of gate io currencies saved to currencies.json. Waiting 5 "
+            LOG_INFO("List of gate io currencies saved to currencies.json. Waiting 5 "
                         "minutes before refreshing list...")
         supported_currencies = currency_list
         if single:
@@ -185,14 +185,14 @@ def get_all_currencies(single=False):
                 if globals.stop_threads:
                     break
     else:
-        logger.info("while loop in get_all_currencies() has stopped.")
+        LOG_INFO("while loop in get_all_currencies() has stopped.")
 
 
 def load_old_coins():
     if os.path.isfile('old_coins.json'):
         with open('old_coins.json') as json_file:
             data = json.load(json_file)
-            logger.debug("Loaded old_coins from file")
+            LOG_DEBUG("Loaded old_coins from file")
             return data
     else:
         return []
@@ -201,4 +201,4 @@ def load_old_coins():
 def store_old_coins(old_coin_list):
     with open('old_coins.json', 'w') as f:
         json.dump(old_coin_list, f, indent=2)
-        logger.debug('Wrote old_coins to file')
+        LOG_DEBUG('Wrote old_coins to file')
