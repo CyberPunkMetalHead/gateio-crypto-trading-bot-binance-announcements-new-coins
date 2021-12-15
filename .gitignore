@@ -25,6 +25,8 @@ config.yml
 # Ignore test file
 test_order.py
 
+# Ignore virtual environment
+venv/
 
 .idea/
 
