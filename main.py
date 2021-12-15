@@ -246,8 +246,10 @@ def sell():
         if globals.stop_threads:
             break
         # check if the order file exists and load the current orders
-        # basically the sell block and update TP and SL logic
-        if len(order) > 0:
+        # basically the sell block and update TP and SL logic.
+        # dev comment: isinstance still does not fix the underlying problem that the order did not get
+        # properly persisted to order.json
+        if len(order) > 0 and isinstance(order, list): 
             for coin in list(order):
 
                 if float(order[coin]['_tp']) == 0:
