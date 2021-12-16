@@ -397,9 +397,6 @@ def sell():
                                 }
                             logger.info(f'Sold coins:\r\n {sold_coins[coin]}')
 
-                            logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
-
-
                         # add to session orders
                         try:
                             if len(session) > 0:
