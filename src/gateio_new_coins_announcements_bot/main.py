@@ -1,9 +1,9 @@
-from trade_client import *
-from store_order import *
-from logger import logger
-from load_config import *
-from new_listings_scraper import *
-import globals
+from gateio_new_coins_announcements_bot.trade_client import *
+from gateio_new_coins_announcements_bot.store_order import *
+from gateio_new_coins_announcements_bot.logger import logger
+from gateio_new_coins_announcements_bot.load_config import *
+from gateio_new_coins_announcements_bot.new_listings_scraper import *
+import gateio_new_coins_announcements_bot.globals as globals
 from collections import defaultdict
 from datetime import datetime, time
 import time

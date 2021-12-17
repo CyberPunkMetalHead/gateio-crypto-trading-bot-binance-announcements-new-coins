@@ -1,7 +1,7 @@
 import os
 import logging
-from load_config import *
-from send_telegram import *
+from gateio_new_coins_announcements_bot.load_config import *
+from gateio_new_coins_announcements_bot.send_telegram import *
 from logging.handlers import TimedRotatingFileHandler
 
 # loads local configuration

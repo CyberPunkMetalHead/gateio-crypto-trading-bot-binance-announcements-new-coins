@@ -1,7 +1,7 @@
 from datetime import datetime
-from logger import logger
+from gateio_new_coins_announcements_bot.logger import logger
 
-from auth.gateio_auth import *
+from gateio_new_coins_announcements_bot.auth.gateio_auth import *
 from gate_api import ApiClient, Order, SpotApi
 
 client = load_gateio_creds('auth/auth.yml')

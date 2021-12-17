@@ -1,7 +1,7 @@
 import requests
 import logging
 import yaml
-from load_config import *
+from gateio_new_coins_announcements_bot.load_config import *
 
 config = load_config('config.yml')
 

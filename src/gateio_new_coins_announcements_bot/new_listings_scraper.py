@@ -7,15 +7,15 @@ import string
 import time
 import re
 
-import globals
+import gateio_new_coins_announcements_bot.globals as globals
 
 import requests
 from gate_api import ApiClient, SpotApi
 
-from auth.gateio_auth import *
-from logger import logger
-from store_order import *
-from load_config import *
+from gateio_new_coins_announcements_bot.auth.gateio_auth import *
+from gateio_new_coins_announcements_bot.logger import logger
+from gateio_new_coins_announcements_bot.store_order import *
+from gateio_new_coins_announcements_bot.load_config import *
 
 config = load_config('config.yml')
 client = load_gateio_creds('auth/auth.yml')
