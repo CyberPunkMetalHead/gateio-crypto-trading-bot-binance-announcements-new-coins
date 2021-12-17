@@ -462,5 +462,6 @@ def main():
 
 
 if __name__ == '__main__':
-    logger.info('working...')
+    logger.info('started working...')
     main()
+    logger.info('stopped working...')
