@@ -115,7 +115,7 @@ def buy():
                         amount = left
 
                     logger.info(
-                        f'starting buy place_order with : {announcement_coin=} | {globals.pairing=} | {volume=} | {amount=} x {price=} | side = buy | {status=}',
+                        f'starting buy place_order with : {announcement_coin} | {globals.pairing} | {volume} | {amount} x {price} | side = buy | {status}',
                         extra={'TELEGRAM': 'BUY_START'})
 
 
@@ -176,7 +176,7 @@ def buy():
                         order_status = order[announcement_coin]['_status']
 
                         logger.info(
-                            f'Order created on {announcement_coin} at a price of {price} each.  {order_status=}',
+                            f'Order created on {announcement_coin} at a price of {price} each.  {order_status}',
                             extra={'TELEGRAM': 'BUY_ORDER_CREATED'})
 
                         if order_status == "closed":
@@ -215,7 +215,7 @@ def buy():
 
                                 session[announcement_coin]['orders'].append(copy.deepcopy(order[announcement_coin]))
 
-                                logger.info(f"Partial fill order detected.  {order_status=} | {partial_amount=} out of {amount=} | {partial_fee=} | {price=}")
+                                logger.info(f"Partial fill order detected.  {order_status} | {partial_amount} out of {amount} | {partial_fee} | {price}")
                                 # FUTURE: We'll probably want to start attempting to sell in the future immediately after ordering any amount
                                 # It would require at least a minor refactor, since order is getting cleared and
                                 # it seems that this function depends on order being empty, but sell() depends on order not being empty.
@@ -226,7 +226,7 @@ def buy():
                             order.pop(announcement_coin)  # reset for next iteration
                 else:
                     logger.warning(
-                        f'{announcement_coin=} is not supported on gate io',
+                        f'{announcement_coin} is not supported on gate io',
                         extra={'TELEGRAM':  'COIN_NOT_SUPPORTED'})
                     logger.info(f"Adding {announcement_coin} to old_coins.json")
                     globals.old_coins.append(announcement_coin)
@@ -267,7 +267,7 @@ def sell():
                 if float(stored_price) == 0:
                     continue
 
-                logger.debug(f'Data for sell: {coin=} | {stored_price=} | {coin_tp=} | {coin_sl=} | {volume=} | {symbol=} ')
+                logger.debug(f'Data for sell: {coin} | {stored_price} | {coin_tp} | {coin_sl} | {volume} | {symbol} ')
 
                 logger.info(f'get_last_price existing coin: {coin}')
                 obj = get_last_price(symbol, globals.pairing, False)
@@ -281,7 +281,7 @@ def sell():
                 if float(last_price) == 0:
                     continue
 
-                logger.info(f'{symbol=}-{last_price=}\t[STOP: ${"{:,.5f}".format(stop_loss_price)} or {"{:,.2f}".format(coin_sl)}%]\t[TOP: ${"{:,.5f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]\t[BUY: ${"{:,.5f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]')
+                logger.info(f'{symbol}-{last_price}\t[STOP: ${"{:,.5f}".format(stop_loss_price)} or {"{:,.2f}".format(coin_sl)}%]\t[TOP: ${"{:,.5f}".format(top_position_price)} or {"{:,.2f}".format(coin_tp)}%]\t[BUY: ${"{:,.5f}".format(stored_price)} (+/-): {"{:,.2f}".format(((float(last_price) - stored_price) / stored_price) * 100)}%]')
 
                 # update stop loss and take profit values if threshold is reached
                 if float(last_price) > stored_price + (
