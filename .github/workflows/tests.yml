@@ -1,4 +1,4 @@
-name: Unit Tests for Python 3.7, 3.8, 3.9
+name: Unit Tests/Flake8 check for Python 3.7, 3.8, 3.9
 
 on:
   - push
