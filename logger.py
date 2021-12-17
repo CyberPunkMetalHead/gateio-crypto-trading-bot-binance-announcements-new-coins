@@ -1,5 +1,6 @@
 import os
 import logging
+from send_discord import DiscordHandler, DiscordLogFilter
 from load_config import *
 from send_telegram import *
 from logging.handlers import TimedRotatingFileHandler
@@ -31,6 +32,11 @@ except KeyError:
     pass
 
 try:
+    log_discord = config['DISCORD']['ENABLED']
+except KeyError:
+    pass
+
+try:
     log_to_console = config['LOGGING']['LOG_TO_CONSOLE']
 except KeyError:
     pass
@@ -44,6 +50,11 @@ if log_telegram:
     telegram_handler.addFilter(TelegramLogFilter()) # only handle messages with extra: TELEGRAM
     telegram_handler.setLevel(logging.NOTSET)  # so that telegram can recieve any kind of log message
     handlers.append(telegram_handler)
+if log_discord:
+    discord_handler = DiscordHandler()
+    discord_handler.addFilter(DiscordLogFilter()) # only handle messages with extra: DISCORD
+    discord_handler.setLevel(logging.NOTSET)  # so that discord can recieve any kind of log message
+    handlers.append(discord_handler)
 
 log.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                 handlers=handlers)
