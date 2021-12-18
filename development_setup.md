@@ -1,4 +1,4 @@
-## 1. Create venv (recommended to use python>=3.7)
+## 1. Create venv (recommended to use python>=3.8)
 
     python3 -m venv env
 

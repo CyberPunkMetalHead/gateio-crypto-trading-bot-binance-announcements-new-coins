@@ -1,4 +1,4 @@
-name: Unit Tests/Flake8 check for Python 3.7, 3.8, 3.9
+name: Unit Tests/Flake8 check for Python 3.8, 3.9
 
 on:
   - push
@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.7', '3.8', '3.9']
+        python-version: ['3.8', '3.9']
     defaults:
       run:
         working-directory: .
