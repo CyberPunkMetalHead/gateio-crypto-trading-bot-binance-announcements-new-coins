@@ -1,4 +1,4 @@
-## 1. Create venv (recommended to use python>=3.8)
+## 1. Create venv (recommended to use python>=3.8, check with `python --version`)
 
     python3 -m venv env
 
@@ -25,7 +25,7 @@ If you just wanna test/use the bot, you can stop here.
 
 ## 5. Install dev requirements
 
-    python -m pip install -r requirements_dev.txt
+    python -m pip install -r dev_requirements.txt
 
 This is necessary make verifying of the code easier and formats the code automatically to match the coding style.
 
@@ -43,7 +43,7 @@ To manually run the pre-commit script:
 
 ### Tox
 Make sure you enabled the virtual environment.
-Tox tests the code for multiple envioremnts (Python 3.7, 3.8, 3.9) and checks code with flake8 and mypy (only on Python Version 3.7).
+Tox tests the code for multiple environments (3.8, 3.9) and checks code with flake8 and mypy (only on Python Version 3.8).
 To run Tox:
 
         tox
