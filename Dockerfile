@@ -1,7 +1,9 @@
 # API Dockerfile
 
 FROM python:3.9-alpine
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN mkdir /app
 COPY src /app
-CMD [ "python", "app/main.py"]
+COPY ./requirements.txt /app/requirements.txt
+WORKDIR /app
+RUN pip3 install -r requirements.txt
+CMD [ "python", "main.py"]
