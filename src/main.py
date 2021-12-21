@@ -395,9 +395,7 @@ def sell():
                                 'side': 'sell',
                                 'iceberg': '0',
                                 }
-
-                            logger.info('Sold coins:\r\n' + str(sold_coins[coin]))
-
+                            logger.info(f'Sold coins:\r\n {sold_coins[coin]}')
 
                         # add to session orders
                         try:
@@ -464,5 +462,6 @@ def main():
 
 
 if __name__ == '__main__':
-    logger.info('working...')
+    logger.info('started working...')
     main()
+    logger.info('stopped working...')
