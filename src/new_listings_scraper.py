@@ -160,7 +160,7 @@ def search_and_update():
                 if os.path.isfile('test_new_listing.json.used'):
                     os.remove('test_new_listing.json.used')
                 os.rename('test_new_listing.json', 'test_new_listing.json.used')
-            logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread) - bot is running for {str(counter / 360)} hours - {str(counter/60)} minutes and {str(counter)} seconds")
+            logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread) - bot is running for {str(counter / 3600)} hours - {str(counter/60)} minutes and {str(counter)} seconds")
             if ((counter / 60) % botPostAllMinutes) == 0:
                 logger.info(f"Bot is still running for {str(counter/60)} minutes - will give live sign in {str(botPostAllMinutes)} Minutes again.", extra={"TELEGRAM": "STARTUP"})
            
