@@ -46,7 +46,7 @@ global supported_currencies
 logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
-logger.info("coinbot is online", extra={'TELEGRAM': 'STARTUP'})
+logger.info("coinbot started", extra={'TELEGRAM': 'START_WORKING'})
 
 
 def buy():
@@ -463,4 +463,4 @@ def main():
 if __name__ == '__main__':
     logger.info('started working...')
     main()
-    logger.info('coinbot is offline', extra={"TELEGRAM": "STOPPED_WORKING"})
+    logger.info('coinbot stopped', extra={"TELEGRAM": "STOPPED_WORKING"})
