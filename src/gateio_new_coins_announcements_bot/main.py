@@ -372,10 +372,7 @@ def sell():
 
                                     # add sell order sold.json (handled better in session.json now)
 
-                                    # TODO: check if this makes sense for id
-                                    id = 0
-
-                                    id = f"{coin}_{id}"
+                                    id = f"{coin}_{sell.id}"
                                     sold_coins[id] = sell
                                     sold_coins[id] = sell.__dict__
                                     sold_coins[id].pop("local_vars_configuration")
