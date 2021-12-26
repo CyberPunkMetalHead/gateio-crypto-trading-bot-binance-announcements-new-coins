@@ -21,4 +21,7 @@ COPY config.yml .
 COPY old_coins.json .
 COPY auth/auth.yml ./auth/
 
-ENTRYPOINT [ "python", "main.py"]
+#root directory contains main.py to start the bot as well as all config/auth.yml files
+WORKDIR .
+
+CMD [ "python", "main.py"]
