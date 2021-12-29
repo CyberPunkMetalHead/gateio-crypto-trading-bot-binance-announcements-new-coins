@@ -5,7 +5,7 @@ from send_telegram import *
 from logging.handlers import TimedRotatingFileHandler
 
 # loads local configuration
-config = load_config('config.yml')
+config = load_config('src/config.yml')
 
 log = logging
 

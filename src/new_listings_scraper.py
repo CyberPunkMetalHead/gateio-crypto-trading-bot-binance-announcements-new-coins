@@ -17,8 +17,8 @@ from logger import logger
 from store_order import *
 from load_config import *
 
-config = load_config('config.yml')
-client = load_gateio_creds('auth/auth.yml')
+config = load_config('src/config.yml')
+client = load_gateio_creds('src/auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
 
 global supported_currencies

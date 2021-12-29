@@ -4,7 +4,7 @@ from logger import logger
 from auth.gateio_auth import *
 from gate_api import ApiClient, Order, SpotApi
 
-client = load_gateio_creds('auth/auth.yml')
+client = load_gateio_creds('src/auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
 
 last_trade = None
