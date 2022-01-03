@@ -33,5 +33,5 @@
       BUY_START: True # when entering position
       BUY_ORDER_CREATED: True # when buy order is created
       BUY_FILLED: True # when the buy order got filled
-      SELL_START: True # when starting to sell      
+      SELL_START: True # when starting to sell
       SELL_FILLED: True # when sold
