@@ -40,14 +40,13 @@ else:
 
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
-global supported_currencies
 
+global supported_currencies
 
 logger.debug("Starting get_all_currencies")
 supported_currencies = get_all_currencies(single=True)
 logger.debug("Finished get_all_currencies")
-
-logger.info("new-coin-bot online", extra={'TELEGRAM': 'STARTUP'})
+logger.info("coinbot started", extra={'TELEGRAM': 'START_WORKING'})
 
 
 def buy():
@@ -464,4 +463,4 @@ def main():
 if __name__ == '__main__':
     logger.info('started working...')
     main()
-    logger.info('stopped working...')
+    logger.info('coinbot stopped', extra={"TELEGRAM": "STOPPED_WORKING"})

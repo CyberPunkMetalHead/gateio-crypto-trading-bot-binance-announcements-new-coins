@@ -21,6 +21,7 @@ config = load_config('src/config.yml')
 client = load_gateio_creds('src/auth/auth.yml')
 spot_api = SpotApi(ApiClient(client))
 
+
 global supported_currencies
 
 previously_found_coins = set()
@@ -101,7 +102,7 @@ def get_last_coin():
     uppers = None
 
     # returns nothing if it's an old coin or it's not an actual coin listing
-    if 'Will List' not in latest_announcement or found_coin[0] == globals.latest_listing or \
+    if 'Binance Will List' not in latest_announcement or found_coin[0] == globals.latest_listing or \
             found_coin[0] in previously_found_coins:
 
         # if the latest Binance announcement is not a new coin listing, or the listing has already been returned, check kucoin
@@ -139,13 +140,17 @@ def search_and_update():
     """
     Pretty much our main func
     """
+    counter = 0
+    botPostAllMinutes = 5
     while not globals.stop_threads:
         sleep_time = 3
+        
         for x in range(sleep_time):
             time.sleep(1)
             if globals.stop_threads:
                 break
         try:
+            counter+= 3 
             latest_coin = get_last_coin()
             if latest_coin:
                 store_new_listing(latest_coin)
@@ -154,7 +159,11 @@ def search_and_update():
                 if os.path.isfile('test_new_listing.json.used'):
                     os.remove('test_new_listing.json.used')
                 os.rename('test_new_listing.json', 'test_new_listing.json.used')
-            logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
+            logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread) - bot is running for {str(counter / 3600)} hours - {str(counter/60)} minutes and {str(counter)} seconds")
+            if ((counter / 60) % botPostAllMinutes) == 0:
+                logger.info(f"Bot is still running for {str(counter/60)} minutes - will give live sign in {str(botPostAllMinutes)} Minutes again.", extra={"TELEGRAM": "START_WORKING"})
+           
+            
         except Exception as e:
             logger.info(e)
     else:
