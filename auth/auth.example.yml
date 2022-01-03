@@ -9,4 +9,3 @@
   # then go visit https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates and find the chat ID
   telegram_token: "my_token"
   telegram_chat_id: "my_chat_id"
-  
