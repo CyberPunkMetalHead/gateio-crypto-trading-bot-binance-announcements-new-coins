@@ -27,11 +27,11 @@ If applicable, add screenshots to help explain your problem.
 If applicable, add logs to help explain your problem.
 Please use the markdown code block format.
 e.g.
-\`\`\`
+```
 INFO: Getting the list of supported currencies from gate io
 INFO: List of gate io currencies saved to currencies.json. Waiting 5 minutes before refreshing list...
 INFO: new-coi....
-\`\`\`
+```
 
 
 
