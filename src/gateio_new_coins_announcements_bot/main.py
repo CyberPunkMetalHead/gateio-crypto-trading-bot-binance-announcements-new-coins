@@ -465,6 +465,8 @@ def main():
     Sells, adjusts TP and SL according to trailing values
     and buys new coins
     """
+    logger.info("started working...")
+
     # To add a coin to ignore, add it to the json array in old_coins.json
     globals.old_coins = load_old_coins()
     logger.debug(f"old_coins: {globals.old_coins}")
@@ -520,8 +522,4 @@ def main():
         t_buy_thread.join()
         t_sell_thread.join()
 
-
-if __name__ == "__main__":
-    logger.info("started working...")
-    main()
     logger.info("stopped working...")
