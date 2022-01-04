@@ -15,6 +15,7 @@ from gateio_new_coins_announcements_bot.new_listings_scraper import store_old_co
 from gateio_new_coins_announcements_bot.store_order import load_order
 from gateio_new_coins_announcements_bot.store_order import store_order
 from gateio_new_coins_announcements_bot.trade_client import get_last_price
+from gateio_new_coins_announcements_bot.trade_client import is_api_key_valid
 from gateio_new_coins_announcements_bot.trade_client import place_order
 
 # To add a coin to ignore, add it to the json array in old_coins.json
@@ -459,6 +460,15 @@ def sell():
         time.sleep(3)
 
 
+def validate_gateio_api_key():
+    if is_api_key_valid():
+        logger.info("Gate.io api keys are valid!")
+    else:
+        raise Exception(
+            "Gate-io API keys are invalid. Please make sure you are using the correct v4 keys with read/write enabled."
+        )
+
+
 def main():
     """
     Sells, adjusts TP and SL according to trailing values
@@ -485,6 +495,7 @@ def main():
 
     if not globals.test_mode:
         logger.info("!!! LIVE MODE !!!")
+        validate_gateio_api_key()
 
     t_get_currencies_thread = threading.Thread(target=get_all_currencies)
     t_get_currencies_thread.start()
