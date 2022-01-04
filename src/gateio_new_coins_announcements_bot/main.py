@@ -17,37 +17,10 @@ from gateio_new_coins_announcements_bot.store_order import store_order
 from gateio_new_coins_announcements_bot.trade_client import get_last_price
 from gateio_new_coins_announcements_bot.trade_client import place_order
 
-# To add a coin to ignore, add it to the json array in old_coins.json
-globals.old_coins = load_old_coins()
-logger.debug(f"old_coins: {globals.old_coins}")
-
-# loads local configuration
-config = load_config("config.yml")
-
-# load necessary files
-if os.path.isfile("sold.json"):
-    sold_coins = load_order("sold.json")
-else:
-    sold_coins = {}
-
-if os.path.isfile("order.json"):
-    order = load_order("order.json")
-else:
-    order = {}
-
-# memory store for all orders for a specific coin
-if os.path.isfile("session.json"):
-    session = load_order("session.json")
-else:
-    session = {}
-
-# Keep the supported currencies loaded in RAM so no time is wasted fetching
-# currencies.json from disk when an announcement is made
-logger.debug("Starting get_all_currencies")
-supported_currencies = get_all_currencies(single=True)
-logger.debug("Finished get_all_currencies")
-
-logger.info("new-coin-bot online", extra={"TELEGRAM": "STARTUP"})
+sold_coins = {}
+order = {}
+session = {}
+supported_currencies = None
 
 
 def buy():
@@ -459,11 +432,54 @@ def sell():
         time.sleep(3)
 
 
+def load_sold_coins():
+    global sold_coins
+    if os.path.isfile("sold.json"):
+        sold_coins = load_order("sold.json")
+
+
+def load_orders():
+    global order
+    if os.path.isfile("order.json"):
+        order = load_order("order.json")
+
+
+def load_sessions():
+    global session
+    # memory store for all orders for a specific coin
+    if os.path.isfile("session.json"):
+        session = load_order("session.json")
+
+
+def fetch_currencies():
+    global supported_currencies
+    # Keep the supported currencies loaded in RAM so no time is wasted fetching
+    # currencies.json from disk when an announcement is made
+    logger.debug("Starting get_all_currencies")
+    supported_currencies = get_all_currencies(single=True)
+    logger.debug("Finished get_all_currencies")
+
+
 def main():
     """
     Sells, adjusts TP and SL according to trailing values
     and buys new coins
     """
+    # To add a coin to ignore, add it to the json array in old_coins.json
+    globals.old_coins = load_old_coins()
+    logger.debug(f"old_coins: {globals.old_coins}")
+
+    # loads local configuration
+    config = load_config("config.yml")
+
+    # load necessary files
+    load_old_coins()
+    load_orders()
+    load_sessions()
+
+    fetch_currencies()
+
+    logger.info("new-coin-bot online", extra={"TELEGRAM": "STARTUP"})
 
     # Protection from stale announcement
     latest_coin = get_last_coin()
