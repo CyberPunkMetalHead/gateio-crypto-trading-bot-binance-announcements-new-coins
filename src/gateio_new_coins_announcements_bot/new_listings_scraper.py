@@ -50,16 +50,21 @@ def get_announcement():
         f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query"
         f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     )
-    latest_announcement = requests.get(request_url)
-    try:
-        logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
-    except KeyError:
-        # No X-Cache header was found - great news, we're hitting the source.
-        pass
 
-    latest_announcement = latest_announcement.json()
-    logger.debug("Finished pulling announcement page")
-    return latest_announcement["data"]["catalogs"][0]["articles"][0]["title"]
+    latest_announcement = requests.get(request_url)
+    if latest_announcement.status_code == 200:
+        try:
+            logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+        except KeyError:
+            # No X-Cache header was found - great news, we're hitting the source.
+            pass
+
+        latest_announcement = latest_announcement.json()
+        logger.debug("Finished pulling announcement page")
+        return latest_announcement["data"]["catalogs"][0]["articles"][0]["title"]
+    else:
+        logger.error(f"Error pulling binance announcement page: {latest_announcement.status_code}")
+        return ""
 
 
 def get_kucoin_announcement():
@@ -88,15 +93,19 @@ def get_kucoin_announcement():
         f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     )
     latest_announcement = requests.get(request_url)
-    try:
-        logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
-    except KeyError:
-        # No X-Cache header was found - great news, we're hitting the source.
-        pass
+    if latest_announcement.status_code == 200:
+        try:
+            logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
+        except KeyError:
+            # No X-Cache header was found - great news, we're hitting the source.
+            pass
 
-    latest_announcement = latest_announcement.json()
-    logger.debug("Finished pulling announcement page")
-    return latest_announcement["items"][0]["title"]
+        latest_announcement = latest_announcement.json()
+        logger.debug("Finished pulling announcement page")
+        return latest_announcement["items"][0]["title"]
+    else:
+        logger.error(f"Error pulling kucoin announcement page: {latest_announcement.status_code}")
+        return ""
 
 
 def get_last_coin():
