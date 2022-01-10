@@ -141,7 +141,7 @@ def get_last_coin():
         coins.extend(kucoin_coin)
 
     if len(coins) > 0:
-        logger.debug(f"Found {len(coins)} new coins: {coins}. Picking first new coin...")
+        logger.debug(f"Detected {len(coins)} coins from announcements: {coins}. Picking first new coin...")
         for coin in coins:
             # return coin first new coin
             if coin != globals.latest_listing and coin not in previously_found_coins:
