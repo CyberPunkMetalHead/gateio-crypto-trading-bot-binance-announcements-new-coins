@@ -34,22 +34,14 @@ def get_announcement():
     # Generate random query/params to help prevent caching
     rand_page_size = random.randint(1, 200)
     letters = string.ascii_letters
-    random_string = "".join(random.choice(letters) for i in range(random.randint(10, 20)))
+    random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
     random_number = random.randint(1, 99999999999999999999)
-    queries = [
-        "type=1",
-        "catalogId=48",
-        "pageNo=1",
-        f"pageSize={str(rand_page_size)}",
-        f"rnd={str(time.time())}",
-        f"{random_string}={str(random_number)}",
-    ]
+    queries = ["type=1", "catalogId=48", "pageNo=1", f"pageSize={str(rand_page_size)}", f"rnd={str(time.time())}",
+               f"{random_string}={str(random_number)}"]
     random.shuffle(queries)
     logger.debug(f"Queries: {queries}")
-    request_url = (
-        f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query"
-        f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
-    )
+    request_url = f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query" \
+                  f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     latest_announcement = requests.get(request_url)
     try:
         logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
@@ -59,7 +51,7 @@ def get_announcement():
 
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
-    return latest_announcement["data"]["catalogs"][0]["articles"][0]["title"]
+    return latest_announcement['data']['catalogs'][0]['articles'][0]['title']
 
 
 def get_kucoin_announcement():
@@ -71,22 +63,14 @@ def get_kucoin_announcement():
     # Generate random query/params to help prevent caching
     rand_page_size = random.randint(1, 200)
     letters = string.ascii_letters
-    random_string = "".join(random.choice(letters) for i in range(random.randint(10, 20)))
+    random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
     random_number = random.randint(1, 99999999999999999999)
-    queries = [
-        "page=1",
-        f"pageSize={str(rand_page_size)}",
-        "category=listing",
-        "lang=en_US",
-        f"rnd={str(time.time())}",
-        f"{random_string}={str(random_number)}",
-    ]
+    queries = ["page=1", f"pageSize={str(rand_page_size)}", "category=listing", "lang=en_US" , f"rnd={str(time.time())}",
+               f"{random_string}={str(random_number)}"]
     random.shuffle(queries)
     logger.debug(f"Queries: {queries}")
-    request_url = (
-        f"https://www.kucoin.com/_api/cms/articles?"
-        f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
-    )
+    request_url = f"https://www.kucoin.com/_api/cms/articles?" \
+                  f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     latest_announcement = requests.get(request_url)
     try:
         logger.debug(f'X-Cache: {latest_announcement.headers["X-Cache"]}')
@@ -96,7 +80,7 @@ def get_kucoin_announcement():
 
     latest_announcement = latest_announcement.json()
     logger.debug("Finished pulling announcement page")
-    return latest_announcement["items"][0]["title"]
+    return latest_announcement['items'][0]['title']
 
 
 def get_last_coin():
