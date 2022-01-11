@@ -14,6 +14,7 @@ from gateio_new_coins_announcements_bot.auth.gateio_auth import load_gateio_cred
 from gateio_new_coins_announcements_bot.load_config import load_config
 from gateio_new_coins_announcements_bot.logger import logger
 from gateio_new_coins_announcements_bot.store_order import load_order
+import rotating_proxy
 
 config = load_config("config.yml")
 client = load_gateio_creds("auth/auth.yml")
