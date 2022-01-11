@@ -1,4 +1,4 @@
-import random
+# import random
 from typing import Callable
 import requests
 import threading
@@ -20,11 +20,11 @@ def init_proxy():
 
 
 def _fetch_proxies():
-    logger.info(f"Fetching proxies...")
+    logger.info("Fetching proxies...")
     global _proxy_list
     global _proxy
     _proxy_list = {}
-    threads = []
+    # threads = []
     try:
         proxy_res = requests.get(
             "https://www.proxyscan.io/api/proxy?last_check=180&limit=20&type=socks5&format=txt&ping=1000"
@@ -38,7 +38,7 @@ def _fetch_proxies():
 
     """
     list = proxy_res.split("\n")
-    
+
     if len(list) > 0:
         for p in list:
             t = threading.Thread(target=checker, args=[p])
@@ -72,12 +72,13 @@ def _every(delay: int, task: Callable):
             logger.error("Problem while fetching proxies")
         # skip tasks if we are behind schedule:
         next_time += (time.time() - next_time) // delay * delay + delay
-    logger.info(f"Proxies fetching thread has stopped.")
+    logger.info("Proxies fetching thread has stopped.")
 
 
 def checker(proxy):
     global _proxy_list
-    user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/37.0.2062.94 Chrome/37.0.2062.94 Safari/537.36"
+    user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) \
+        Ubuntu Chromium/37.0.2062.94 Chrome/37.0.2062.94 Safari/537.36"
     site = "https://binance.com/"
     proxy_support = urllib.request.ProxyHandler({"https": proxy})
     opener = urllib.request.build_opener(proxy_support)
