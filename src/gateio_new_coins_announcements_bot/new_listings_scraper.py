@@ -5,6 +5,10 @@ import random
 import re
 import string
 import time
+import re
+
+import globals
+from util.random import random_str, random_int
 
 import requests
 from gate_api import ApiClient
@@ -32,15 +36,17 @@ def get_announcement():
     """
     logger.debug("Pulling announcement page")
     # Generate random query/params to help prevent caching
-    rand_page_size = random.randint(1, 200)
-    letters = string.ascii_letters
-    random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
-    random_number = random.randint(1, 99999999999999999999)
-    queries = ["type=1", "catalogId=48", "pageNo=1", f"pageSize={str(rand_page_size)}", f"rnd={str(time.time())}",
-               f"{random_string}={str(random_number)}"]
+    queries = [
+        "type=1",
+        "catalogId=48",
+        "pageNo=1",
+        f"pageSize={str(random_int(maxInt=200))}",
+        f"rnd={str(time.time())}",
+        f"{random_str()}={str(random_int())}"
+    ]
     random.shuffle(queries)
     logger.debug(f"Queries: {queries}")
-    request_url = f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query" \
+    request_url = f"https://www.binance.com/gateway-api/v1/public/cms/article/list/query" \
                   f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     latest_announcement = requests.get(request_url)
     try:
@@ -61,12 +67,14 @@ def get_kucoin_announcement():
     """
     logger.debug("Pulling announcement page")
     # Generate random query/params to help prevent caching
-    rand_page_size = random.randint(1, 200)
-    letters = string.ascii_letters
-    random_string = ''.join(random.choice(letters) for i in range(random.randint(10, 20)))
-    random_number = random.randint(1, 99999999999999999999)
-    queries = ["page=1", f"pageSize={str(rand_page_size)}", "category=listing", "lang=en_US" , f"rnd={str(time.time())}",
-               f"{random_string}={str(random_number)}"]
+    queries = [
+        "page=1",
+        f"pageSize={str(random_int(maxInt=200))}",
+        "category=listing",
+        "lang=en_US",
+        f"rnd={str(time.time())}",
+        f"{random_str()}={str(random_int())}"
+    ]
     random.shuffle(queries)
     logger.debug(f"Queries: {queries}")
     request_url = f"https://www.kucoin.com/_api/cms/articles?" \
