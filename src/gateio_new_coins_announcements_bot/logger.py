@@ -50,5 +50,6 @@ if log_telegram:
 log.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", handlers=handlers)
 
 logger = logging.getLogger(__name__)
+print(__name__)
 level = logging.getLevelName(log_level)
 logger.setLevel(level)
