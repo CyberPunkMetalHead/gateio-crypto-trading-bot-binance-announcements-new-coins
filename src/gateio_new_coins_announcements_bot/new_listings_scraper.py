@@ -1,25 +1,13 @@
 import ast
 import json
 import os.path
-<<<<<<< HEAD:src/gateio_new_coins_announcements_bot/new_listings_scraper.py
-import random
-import re
-import string
-=======
 import os
->>>>>>> 57f40fa ( First crack at unit-testing new announcement_scrapers/binance_scraper.py):src/new_listings_scraper.py
 import time
 import re
 
 import globals
 
-<<<<<<< HEAD:src/gateio_new_coins_announcements_bot/new_listings_scraper.py
-import requests
-from gate_api import ApiClient
-from gate_api import SpotApi
-=======
 from gate_api import ApiClient, SpotApi
->>>>>>> 57f40fa ( First crack at unit-testing new announcement_scrapers/binance_scraper.py):src/new_listings_scraper.py
 
 import gateio_new_coins_announcements_bot.globals as globals
 from gateio_new_coins_announcements_bot.auth.gateio_auth import load_gateio_creds
@@ -27,16 +15,11 @@ from gateio_new_coins_announcements_bot.load_config import load_config
 from gateio_new_coins_announcements_bot.logger import logger
 from gateio_new_coins_announcements_bot.store_order import load_order
 
-<<<<<<< HEAD:src/gateio_new_coins_announcements_bot/new_listings_scraper.py
-config = load_config("config.yml")
-client = load_gateio_creds("auth/auth.yml")
-=======
 from announcement_scrapers.binance_scraper import BinanceScraper
 from announcement_scrapers.kucoin_scraper import KucoinScraper
 
 config = load_config('src/config.yml')
 client = load_gateio_creds('src/auth/auth.yml')
->>>>>>> 57f40fa ( First crack at unit-testing new announcement_scrapers/binance_scraper.py):src/new_listings_scraper.py
 spot_api = SpotApi(ApiClient(client))
 
 supported_currencies = None
@@ -52,17 +35,10 @@ def get_last_coin():
     latest_announcement = BinanceScraper().fetch_latest_announcement()
 
     # enable Kucoin Announcements if True in config
-<<<<<<< HEAD:src/gateio_new_coins_announcements_bot/new_listings_scraper.py
-    if config["TRADE_OPTIONS"]["KUCOIN_ANNOUNCEMENTS"]:
-        logger.info("Kucoin announcements enabled, look for new Kucoin coins...")
-        kucoin_announcement = get_kucoin_announcement()
-        kucoin_coin = re.findall(r"\(([^)]+)", kucoin_announcement)
-=======
     if config['TRADE_OPTIONS']['KUCOIN_ANNOUNCEMENTS']:
         logger.info('Kucoin announcements enabled, look for new Kucoin coins...')
         kucoin_announcement = KucoinScraper().fetch_latest_announcement()
         kucoin_coin = re.findall('\(([^)]+)', kucoin_announcement)
->>>>>>> 57f40fa ( First crack at unit-testing new announcement_scrapers/binance_scraper.py):src/new_listings_scraper.py
 
     found_coin = re.findall(r"\(([^)]+)", latest_announcement)
     uppers = None

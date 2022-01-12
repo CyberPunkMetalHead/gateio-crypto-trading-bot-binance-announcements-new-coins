@@ -1,7 +1,7 @@
 import re
 from unittest import TestCase
 
-from util.random import random_str, random_int
+from gateio_new_coins_announcements_bot.util.random import random_str, random_int
 
 
 class RandomUtilsTest(TestCase):

@@ -7,7 +7,7 @@ from gateio_new_coins_announcements_bot.send_telegram import TelegramHandler
 from gateio_new_coins_announcements_bot.send_telegram import TelegramLogFilter
 
 # loads local configuration
-config = load_config("config.yml")
+config = load_config("src/config.yml")
 
 log = logging
 

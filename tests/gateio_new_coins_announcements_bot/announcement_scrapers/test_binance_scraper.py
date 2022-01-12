@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from announcement_scrapers.binance_scraper import BinanceScraper
+from gateio_new_coins_announcements_bot.announcement_scrapers.binance_scraper import BinanceScraper
 from requests import HTTPError
 
 
@@ -59,17 +59,17 @@ class BinanceScraperTest(TestCase):
         self.mock_network_client.get.return_value.json = MagicMock(return_value=mock_announcement_json())
         self.mock_network_client.get.return_value.headers = {}
 
-        with self.assertLogs('logger', level='DEBUG') as captured:
+        with self.assertLogs('gateio_new_coins_announcements_bot.logger', level='DEBUG') as captured:
             self.scraper.fetch_latest_announcement()
 
-        assert 'DEBUG:logger:Hit the source directly (no cache)' in captured.output
+        assert 'DEBUG:gateio_new_coins_announcements_bot.logger:Hit the source directly (no cache)' in captured.output
 
     def test_logs_when_cache_is_missed(self):
         self.mock_network_client.get.return_value.status_code = 200
         self.mock_network_client.get.return_value.json = MagicMock(return_value=mock_announcement_json())
         self.mock_network_client.get.return_value.headers = {"X-Cache": "abcde12345"}
 
-        with self.assertLogs('logger', level='DEBUG') as captured:
+        with self.assertLogs('gateio_new_coins_announcements_bot.logger', level='DEBUG') as captured:
             self.scraper.fetch_latest_announcement()
 
-        assert 'DEBUG:logger:Response was cached. Contains headers X-Cache: abcde12345' in captured.output
+        assert 'DEBUG:gateio_new_coins_announcements_bot.logger:Response was cached. Contains headers X-Cache: abcde12345' in captured.output
