@@ -14,9 +14,8 @@ from gateio_new_coins_announcements_bot.auth.gateio_auth import load_gateio_cred
 from gateio_new_coins_announcements_bot.load_config import load_config
 from gateio_new_coins_announcements_bot.logger import logger
 from gateio_new_coins_announcements_bot.store_order import load_order
-
-from announcement_scrapers.binance_scraper import BinanceScraper
-from announcement_scrapers.kucoin_scraper import KucoinScraper
+from gateio_new_coins_announcements_bot.announcement_scrapers.binance_scraper import BinanceScraper
+from gateio_new_coins_announcements_bot.announcement_scrapers.kucoin_scraper import KucoinScraper
 
 config = load_config('src/config.yml')
 client = load_gateio_creds('src/auth/auth.yml')
