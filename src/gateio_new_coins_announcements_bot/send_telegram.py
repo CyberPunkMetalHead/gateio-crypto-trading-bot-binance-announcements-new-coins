@@ -5,9 +5,9 @@ import yaml
 
 from gateio_new_coins_announcements_bot.load_config import load_config
 
-config = load_config("src/config.yml")
+config = load_config("config.yml")
 
-with open("src/auth/auth.yml") as file:
+with open("auth/auth.yml") as file:
     try:
         creds = yaml.load(file, Loader=yaml.FullLoader)
         bot_token = creds["telegram_token"]
