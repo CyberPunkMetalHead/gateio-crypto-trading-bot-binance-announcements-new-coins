@@ -47,7 +47,7 @@ def get_announcement():
     random.shuffle(queries)
     logger.debug(f"Queries: {queries}")
     request_url = (
-        f"https://www.binancezh.com/gateway-api/v1/public/cms/article/list/query"
+        f"https://www.binance.com/gateway-api/v1/public/cms/article/list/query"
         f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
     )
     latest_announcement = requests.get(request_url)
