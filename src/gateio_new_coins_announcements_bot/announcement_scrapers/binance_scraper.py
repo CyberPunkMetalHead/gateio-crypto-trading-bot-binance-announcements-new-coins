@@ -1,9 +1,11 @@
 import random
 import time
+
 import requests
 
 from gateio_new_coins_announcements_bot.logger import logger
-from gateio_new_coins_announcements_bot.util.random import random_str, random_int
+from gateio_new_coins_announcements_bot.util.random import random_int
+from gateio_new_coins_announcements_bot.util.random import random_str
 
 
 class BinanceScraper:
@@ -24,11 +26,11 @@ class BinanceScraper:
         if "X-Cache" in response.headers:
             logger.debug(f'Response was cached. Contains headers X-Cache: {response.headers["X-Cache"]}')
         else:
-            logger.debug(f'Hit the source directly (no cache)')
+            logger.debug("Hit the source directly (no cache)")
 
         latest_announcement = response.json()
         logger.debug("Finished pulling announcement page")
-        return latest_announcement['data']['catalogs'][0]['articles'][0]['title']
+        return latest_announcement["data"]["catalogs"][0]["articles"][0]["title"]
 
     def __request_url(self):
         # Generate random query/params to help prevent caching
@@ -38,8 +40,10 @@ class BinanceScraper:
             "pageNo=1",
             f"pageSize={str(random_int(maxInt=200))}",
             f"rnd={str(time.time())}",
-            f"{random_str()}={str(random_int())}"
+            f"{random_str()}={str(random_int())}",
         ]
         random.shuffle(queries)
-        return f"https://www.binance.com/gateway-api/v1/public/cms/article/list/query" \
-               f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
+        return (
+            f"https://www.binance.com/gateway-api/v1/public/cms/article/list/query"
+            f"?{queries[0]}&{queries[1]}&{queries[2]}&{queries[3]}&{queries[4]}&{queries[5]}"
+        )

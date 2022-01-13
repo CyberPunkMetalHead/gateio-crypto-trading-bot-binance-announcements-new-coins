@@ -1,24 +1,22 @@
 import ast
 import json
 import os.path
-import os
-import time
 import re
+import time
 
-import globals
-
-from gate_api import ApiClient, SpotApi
+from gate_api import ApiClient
+from gate_api import SpotApi
 
 import gateio_new_coins_announcements_bot.globals as globals
+from gateio_new_coins_announcements_bot.announcement_scrapers.binance_scraper import BinanceScraper
+from gateio_new_coins_announcements_bot.announcement_scrapers.kucoin_scraper import KucoinScraper
 from gateio_new_coins_announcements_bot.auth.gateio_auth import load_gateio_creds
 from gateio_new_coins_announcements_bot.load_config import load_config
 from gateio_new_coins_announcements_bot.logger import logger
 from gateio_new_coins_announcements_bot.store_order import load_order
-from gateio_new_coins_announcements_bot.announcement_scrapers.binance_scraper import BinanceScraper
-from gateio_new_coins_announcements_bot.announcement_scrapers.kucoin_scraper import KucoinScraper
 
-config = load_config('src/config.yml')
-client = load_gateio_creds('src/auth/auth.yml')
+config = load_config("src/config.yml")
+client = load_gateio_creds("src/auth/auth.yml")
 spot_api = SpotApi(ApiClient(client))
 
 supported_currencies = None
@@ -34,10 +32,10 @@ def get_last_coin():
     latest_announcement = BinanceScraper().fetch_latest_announcement()
 
     # enable Kucoin Announcements if True in config
-    if config['TRADE_OPTIONS']['KUCOIN_ANNOUNCEMENTS']:
-        logger.info('Kucoin announcements enabled, look for new Kucoin coins...')
+    if config["TRADE_OPTIONS"]["KUCOIN_ANNOUNCEMENTS"]:
+        logger.info("Kucoin announcements enabled, look for new Kucoin coins...")
         kucoin_announcement = KucoinScraper().fetch_latest_announcement()
-        kucoin_coin = re.findall('\(([^)]+)', kucoin_announcement)
+        kucoin_coin = re.findall(r"\(([^)]+)", kucoin_announcement)
 
     found_coin = re.findall(r"\(([^)]+)", latest_announcement)
     uppers = None
