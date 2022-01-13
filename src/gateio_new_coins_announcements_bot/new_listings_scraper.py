@@ -15,8 +15,8 @@ from gateio_new_coins_announcements_bot.load_config import load_config
 from gateio_new_coins_announcements_bot.logger import logger
 from gateio_new_coins_announcements_bot.store_order import load_order
 
-config = load_config("src/config.yml")
-client = load_gateio_creds("src/auth/auth.yml")
+config = load_config("config.yml")
+client = load_gateio_creds("auth/auth.yml")
 spot_api = SpotApi(ApiClient(client))
 
 supported_currencies = None
