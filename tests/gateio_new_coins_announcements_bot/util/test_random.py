@@ -9,7 +9,7 @@ class RandomUtilsTest(TestCase):
     def test_random_str(self):
         str = random_str()
         assert len(str) >= 10 & len(str) <= 20
-        assert re.match(r'[a-zA-z!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~]+', str)
+        assert re.match(r'[a-zA-Z!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~]+', str)
 
     def test_random_int_default(self):
         int = random_int()
