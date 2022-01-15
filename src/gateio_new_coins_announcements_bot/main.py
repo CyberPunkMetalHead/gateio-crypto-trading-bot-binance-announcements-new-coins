@@ -17,7 +17,9 @@ from gateio_new_coins_announcements_bot.store_order import store_order
 from gateio_new_coins_announcements_bot.trade_client import get_last_price
 from gateio_new_coins_announcements_bot.trade_client import is_api_key_valid
 from gateio_new_coins_announcements_bot.trade_client import place_order
-import rotating_proxy
+from gateio_new_coins_announcements_bot.rotating_proxy import init_proxy as init_rotating_proxy
+from gateio_new_coins_announcements_bot.rotating_proxy import set_proxy_event
+
 
 # To add a coin to ignore, add it to the json array in old_coins.json
 globals.old_coins = load_old_coins()
@@ -44,7 +46,7 @@ else:
     session = {}
 
 # Init proxy fetching
-rotating_proxy.init_proxy()
+init_rotating_proxy()
 
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
@@ -512,7 +514,7 @@ def main():
         search_and_update()
     except KeyboardInterrupt:
         logger.info("Stopping Threads")
-        rotating_proxy.event.set()
+        set_proxy_event()
         globals.stop_threads = True
         globals.buy_ready.set()
         globals.sell_ready.set()

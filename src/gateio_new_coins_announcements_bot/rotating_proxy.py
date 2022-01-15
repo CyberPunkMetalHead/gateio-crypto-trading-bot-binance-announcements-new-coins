@@ -12,11 +12,13 @@ from gateio_new_coins_announcements_bot.logger import logger
 
 _proxy_list = {}
 _proxy = None
-event = threading.Event()
+_event = threading.Event()
 
 
 def init_proxy():
     threading.Thread(target=lambda: _every(60 * 10, _fetch_proxies)).start()
+    # Required for populating the proxy list when starting bot
+    _fetch_proxies()
 
 
 def _fetch_proxies():
@@ -31,7 +33,6 @@ def _fetch_proxies():
         ).text
     except requests.exceptions.RequestException as e:
         logger.error(e)
-    print(proxy_res)
 
     for p in proxy_res.split("\n"):
         _proxy_list[p] = p
@@ -60,12 +61,16 @@ def is_ready() -> bool:
     return len(_proxy_list) > 0
 
 
+def set_proxy_event():
+    _event.set()
+
+
 # can be generalized and moved to separate file
 def _every(delay: int, task: Callable):
     global event
     next_time = time.time() + delay
     while not globals.stop_threads:
-        event.wait(max(0, next_time - time.time()))
+        _event.wait(max(0, next_time - time.time()))
         try:
             task()
         except Exception:
@@ -100,7 +105,3 @@ def checker(proxy):
         pass
         print("%s does not respond.\n" % proxy)
         return
-
-
-# Required for populating the proxy list when starting bot
-_fetch_proxies()
