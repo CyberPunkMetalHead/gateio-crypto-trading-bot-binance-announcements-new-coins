@@ -45,8 +45,9 @@ if os.path.isfile("session.json"):
 else:
     session = {}
 
-# Init proxy fetching
-init_rotating_proxy()
+if config["TRADE_OPTIONS"]["ROTATING_PROXY"]:
+    # Init proxy fetching
+    init_rotating_proxy()
 
 # Keep the supported currencies loaded in RAM so no time is wasted fetching
 # currencies.json from disk when an announcement is made
@@ -514,7 +515,8 @@ def main():
         search_and_update()
     except KeyboardInterrupt:
         logger.info("Stopping Threads")
-        set_proxy_event()
+        if config["TRADE_OPTIONS"]["ROTATING_PROXY"]:
+            set_proxy_event()
         globals.stop_threads = True
         globals.buy_ready.set()
         globals.sell_ready.set()
