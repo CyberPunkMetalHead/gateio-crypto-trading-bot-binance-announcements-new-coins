@@ -1,11 +1,11 @@
-# import random
 from typing import Callable
 import requests
 import threading
 import time
 import itertools
+import socket
+import struct
 
-import urllib.request
 import gateio_new_coins_announcements_bot.globals as globals
 from gateio_new_coins_announcements_bot.logger import logger
 
@@ -25,8 +25,7 @@ def _fetch_proxies():
     logger.info("Fetching proxies...")
     global _proxy_list
     global _proxy
-    _proxy_list = {}
-    # threads = []
+    threads: list[threading.Thread] = []
     try:
         proxy_res = requests.get(
             "https://www.proxyscan.io/api/proxy?last_check=180&limit=20&type=socks5&format=txt&ping=1000"
@@ -34,21 +33,18 @@ def _fetch_proxies():
     except requests.exceptions.RequestException as e:
         logger.error(e)
 
-    for p in proxy_res.split("\n"):
-        _proxy_list[p] = p
+    # Merging old proxies with new ones
+    _list = list(proxy_res[:-1].split("\n") | _proxy_list.keys())
 
-    """
-    list = proxy_res.split("\n")
-
-    if len(list) > 0:
-        for p in list:
+    if len(_list) > 0:
+        for p in _list:
             t = threading.Thread(target=checker, args=[p])
             t.start()
             threads.append(t)
 
         for t in threads:
             t.join()
-    """
+
     logger.info(f"Fetched {len(_proxy_list)} proxies")
     _proxy = itertools.cycle(_proxy_list.keys())
 
@@ -67,41 +63,43 @@ def set_proxy_event():
 
 # can be generalized and moved to separate file
 def _every(delay: int, task: Callable):
-    global event
+    global _event
     next_time = time.time() + delay
     while not globals.stop_threads:
         _event.wait(max(0, next_time - time.time()))
-        try:
-            task()
-        except Exception:
-            logger.error("Problem while fetching proxies")
+        if not globals.stop_threads:
+            try:
+                task()
+            except Exception:
+                logger.error("Problem while fetching proxies")
         # skip tasks if we are behind schedule:
         next_time += (time.time() - next_time) // delay * delay + delay
     logger.info("Proxies fetching thread has stopped.")
 
 
-def checker(proxy):
+def checker(proxy: str):
     global _proxy_list
-    user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) \
-        Ubuntu Chromium/37.0.2062.94 Chrome/37.0.2062.94 Safari/537.36"
-    site = "https://binance.com/"
-    proxy_support = urllib.request.ProxyHandler({"https": proxy})
-    opener = urllib.request.build_opener(proxy_support)
-    urllib.request.install_opener(opener)
-    req = urllib.request.Request("https://" + site)
-    req.add_header("User-Agent", user_agent)
+    ip, port = proxy.split(":")
+    sen = struct.pack("BBB", 0x05, 0x01, 0x00)
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(5)
     try:
-        start_time = time.time()
-        urllib.request.urlopen(req, timeout=1000)
-        end_time = time()
-        time_taken = end_time - start_time
-        print("%s works!" % proxy)
-        print("time: " + str(time_taken))
-        print("user_agent: " + user_agent + "\n")
-        _proxy_list[proxy] = proxy
+        s.connect((ip, int(port)))
+        s.sendall(sen)
+
+        data = s.recv(2)
+        version, auth = struct.unpack("BB", data)
+
+        if version == 5 and auth == 0:
+            _proxy_list[proxy] = proxy
+        else:
+            _proxy_list.pop(proxy, None)
+        s.close()
         return
+
     except Exception as e:
-        print(e)
-        pass
-        print("%s does not respond.\n" % proxy)
+        logger.info(f"Proxy {proxy} invalid. Reason: {e}")
+        _proxy_list.pop(proxy, None)
+        s.close()
         return
