@@ -16,26 +16,19 @@
 
 This contains the requirements for the program itself.
 
-## 4. Install the source code as module
-
-    python -m pip install -e .
-
-This installs the source code as a module so dependencies can be referenced easier.
-If you just wanna test/use the bot, you can stop here.
-
-## 5. Install dev requirements
+## 4. Install dev requirements
 
     python -m pip install -r dev_requirements.txt
 
 This is necessary make verifying of the code easier and formats the code automatically to match the coding style.
 
-## 6. Install pre-commit hooks
+## 5. Install pre-commit hooks
 
     pre-commit install
 
 This installs the pre-commit git hooks for the project and makes it possible to run the pre-commit script automatically when committing.
 
-## 7. Run Tests and pre-commit scripts manually
+## 6. Run Tests and pre-commit scripts manually
 ### pre-commit checks
 To manually run the pre-commit script:
 
@@ -53,7 +46,7 @@ Make sure you enabled the virtual environment.
 PyTest runs the unit tests for the code.
 To run PyTest:
 
-        pytest
+        python -m pytest
 
 
 ### Flake8
