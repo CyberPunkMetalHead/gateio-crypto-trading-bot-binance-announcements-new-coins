@@ -107,55 +107,50 @@ def get_kucoin_announcement():
         logger.error(f"Error pulling kucoin announcement page: {latest_announcement.status_code}")
         return ""
 
+def _extract_coins_from_announcement(annoucement):
+    word_blacklist = [
+        "Innovation Zone",
+        "Binance Futures",
+        "Launchpool"
+    ]
+
+    for word in word_blacklist:
+        if word in annoucement:
+            logger.info(f"Latest announcement: {annoucement}")
+            logger.info(f"Blacklisted word: \"{word}\" found in announcement, skipping")
+            return None
+
+    return re.findall(r"\(([^)]+)\)", annoucement)
+
 
 def get_last_coin():
     """
     Returns new Symbol when appropriate
     """
     # scan Binance Announcement
+    logger.info("Scanning Binance Announcement page...")
     latest_announcement = get_announcement()
 
-    # enable Kucoin Announcements if True in config
+    coins = _extract_coins_from_announcement(latest_announcement)
+
+    # if Kucoin Announcements are enabled in config
     if config["TRADE_OPTIONS"]["KUCOIN_ANNOUNCEMENTS"]:
         logger.info("Kucoin announcements enabled, look for new Kucoin coins...")
         kucoin_announcement = get_kucoin_announcement()
-        kucoin_coin = re.findall(r"\(([^)]+)", kucoin_announcement)
+        kucoin_coin = _extract_coins_from_announcement(kucoin_announcement)
+        coins.extend(kucoin_coin)
 
-    found_coin = re.findall(r"\(([^)]+)", latest_announcement)
-    uppers = None
+    if len(coins) > 0:
+        logger.debug(f"Detected {len(coins)} coins from announcements: {coins}. Picking first new coin...")
+        for coin in coins:
+            # return coin first new coin
+            if coin != globals.latest_listing and coin not in previously_found_coins:
+                    previously_found_coins.add(coin)
+                    logger.info("New coin detected: " + coin)
+                    return coin
 
-    # returns nothing if it's an old coin or it's not an actual coin listing
-    if (
-        "Will List" not in latest_announcement
-        or found_coin[0] == globals.latest_listing
-        or found_coin[0] in previously_found_coins
-    ):
-
-        # if the latest Binance announcement is not a new coin listing,
-        # or the listing has already been returned, check kucoin
-        if (
-            config["TRADE_OPTIONS"]["KUCOIN_ANNOUNCEMENTS"]
-            and "Gets Listed" in kucoin_announcement
-            and kucoin_coin[0] != globals.latest_listing
-            and kucoin_coin[0] not in previously_found_coins
-        ):
-            if len(kucoin_coin) == 1:
-                uppers = kucoin_coin[0]
-                previously_found_coins.add(uppers)
-                logger.info("New Kucoin coin detected: " + uppers)
-            if len(kucoin_coin) != 1:
-                uppers = None
-
-    else:
-        if len(found_coin) == 1:
-            uppers = found_coin[0]
-            previously_found_coins.add(uppers)
-            logger.info("New coin detected: " + uppers)
-        if len(found_coin) != 1:
-            uppers = None
-
-    return uppers
-
+    logger.debug("No new coins found")
+    return None
 
 def store_new_listing(listing):
     """
