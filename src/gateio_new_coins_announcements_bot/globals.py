@@ -6,7 +6,7 @@ stop_threads = False
 old_coins = {}
 latest_listing = ""
 
-#TRADE_OPTIONS config values
+# TRADE_OPTIONS config values
 quantity = 15
 pairing = "USDT"
 test_mode = True
