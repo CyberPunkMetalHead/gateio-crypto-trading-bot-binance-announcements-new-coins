@@ -17,7 +17,6 @@
 
 # Ignore pycache
 **/__pycache__/
-**/auth/__pycache__/
 
 # Ignore config
 **/config.yml
@@ -26,6 +25,7 @@
 **/test_order.py
 
 .idea/
+*.iml
 
 # Visual Studio Code as suggested by https://github.com/github/gitignore/blob/master/Global/VisualStudioCode.gitignore
 .vscode/*

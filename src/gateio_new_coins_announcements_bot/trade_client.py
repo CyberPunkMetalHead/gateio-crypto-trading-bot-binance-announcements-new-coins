@@ -3,6 +3,7 @@ from datetime import datetime
 from gate_api import ApiClient
 from gate_api import Order
 from gate_api import SpotApi
+from gate_api.exceptions import GateApiException
 
 from gateio_new_coins_announcements_bot.auth.gateio_auth import load_gateio_creds
 from gateio_new_coins_announcements_bot.logger import LOG_DEBUG
@@ -83,3 +84,12 @@ def place_order(base, quote, amount, side, last_price):
 
     else:
         return order
+
+
+def is_api_key_valid():
+    try:
+        # try to call a method that requires the api key
+        spot_api.list_all_open_orders()
+        return True
+    except GateApiException:
+        return False
