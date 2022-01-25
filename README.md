@@ -20,17 +20,25 @@ It comes with a live and test mode so naturally, use at your own risk.
     Windows:
     env\Scripts\activate.bat
 
-## 3. Install program requirements
+## 3.1 Install program requirements  
 
-    python3 -m pip install -r requirements.txt
+    python -m pip install -r requirements.txt  
+    
+## 3.2 Install program requirements For Windows   
+
+    py -m pip install -r requirements.txt  
 
 This contains the requirements for the program itself. You may now run the script using python main.py. 
 No additional steps needed for simply running the tool, you may stop here.
 
-## 4. Install dev requirements
+## 4.1 Install dev requirements  
 
-    python3 -m pip install -r dev_requirements.txt
+    python -m pip install -r dev_requirements.txt  
+    
+## 4.2 Install dev requirements For Windows  
 
+    py -m pip install -r dev_requirements.txt  
+      
 This is necessary make verifying of the code easier and formats the code automatically to match the coding style.
 
 ## 5. Install pre-commit hooks
