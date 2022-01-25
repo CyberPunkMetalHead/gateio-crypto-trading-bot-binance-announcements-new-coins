@@ -22,14 +22,14 @@ It comes with a live and test mode so naturally, use at your own risk.
 
 ## 3. Install program requirements
 
-    python -m pip install -r requirements.txt
+    python3 -m pip install -r requirements.txt
 
 This contains the requirements for the program itself. You may now run the script using python main.py. 
 No additional steps needed for simply running the tool, you may stop here.
 
 ## 4. Install dev requirements
 
-    python -m pip install -r dev_requirements.txt
+    python3 -m pip install -r dev_requirements.txt
 
 This is necessary make verifying of the code easier and formats the code automatically to match the coding style.
 
@@ -57,7 +57,7 @@ Make sure you enabled the virtual environment.
 PyTest runs the unit tests for the code.
 To run PyTest:
 
-        python -m pytest
+        python3 -m pytest
 
 
 ### Flake8
