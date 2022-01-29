@@ -24,7 +24,7 @@ It comes with a live and test mode so naturally, use at your own risk.
 
     python -m pip install -r requirements.txt
 
-This contains the requirements for the program itself. You may now run the script using python main.py. 
+This contains the requirements for the program itself. You may now run the script using python main.py.
 No additional steps needed for simply running the tool, you may stop here.
 
 ## 4. Install dev requirements
