@@ -3,7 +3,7 @@ import time
 
 import requests
 
-from gateio_new_coins_announcements_bot.logger import logger
+from gateio_new_coins_announcements_bot.logger import LOG_DEBUG
 from gateio_new_coins_announcements_bot.util.random import random_int
 from gateio_new_coins_announcements_bot.util.random import random_str
 
@@ -16,7 +16,7 @@ class BinanceScraper:
         """
         Retrieves new coin listing announcements from binance.com
         """
-        logger.debug("Pulling announcement page")
+        LOG_DEBUG("Pulling announcement page")
         request_url = self.__request_url()
         response = self.http_client.get(request_url)
 
@@ -24,12 +24,12 @@ class BinanceScraper:
         response.raise_for_status()
 
         if "X-Cache" in response.headers:
-            logger.debug(f'Response was cached. Contains headers X-Cache: {response.headers["X-Cache"]}')
+            LOG_DEBUG(f'Response was cached. Contains headers X-Cache: {response.headers["X-Cache"]}')
         else:
-            logger.debug("Hit the source directly (no cache)")
+            LOG_DEBUG("Hit the source directly (no cache)")
 
         latest_announcement = response.json()
-        logger.debug("Finished pulling announcement page")
+        LOG_DEBUG("Finished pulling announcement page")
         return latest_announcement["data"]["catalogs"][0]["articles"][0]["title"]
 
     def __request_url(self):

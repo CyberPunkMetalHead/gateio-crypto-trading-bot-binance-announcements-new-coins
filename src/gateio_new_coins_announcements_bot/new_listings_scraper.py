@@ -12,7 +12,8 @@ from gateio_new_coins_announcements_bot.announcement_scrapers.binance_scraper im
 from gateio_new_coins_announcements_bot.announcement_scrapers.kucoin_scraper import KucoinScraper
 from gateio_new_coins_announcements_bot.auth.gateio_auth import load_gateio_creds
 from gateio_new_coins_announcements_bot.load_config import load_config
-from gateio_new_coins_announcements_bot.logger import logger
+from gateio_new_coins_announcements_bot.logger import LOG_DEBUG
+from gateio_new_coins_announcements_bot.logger import LOG_INFO
 from gateio_new_coins_announcements_bot.store_order import load_order
 
 config = load_config("config.yml")
@@ -33,7 +34,7 @@ def get_last_coin():
 
     # enable Kucoin Announcements if True in config
     if config["TRADE_OPTIONS"]["KUCOIN_ANNOUNCEMENTS"]:
-        logger.info("Kucoin announcements enabled, look for new Kucoin coins...")
+        LOG_INFO("Kucoin announcements enabled, look for new Kucoin coins...")
         kucoin_announcement = KucoinScraper().fetch_latest_announcement()
         kucoin_coin = re.findall(r"\(([^)]+)", kucoin_announcement)
 
@@ -58,7 +59,7 @@ def get_last_coin():
             if len(kucoin_coin) == 1:
                 uppers = kucoin_coin[0]
                 previously_found_coins.add(uppers)
-                logger.info("New Kucoin coin detected: " + uppers)
+                LOG_INFO("New Kucoin coin detected: " + uppers)
             if len(kucoin_coin) != 1:
                 uppers = None
 
@@ -66,7 +67,7 @@ def get_last_coin():
         if len(found_coin) == 1:
             uppers = found_coin[0]
             previously_found_coins.add(uppers)
-            logger.info("New coin detected: " + uppers)
+            LOG_INFO("New coin detected: " + uppers)
         if len(found_coin) != 1:
             uppers = None
 
@@ -78,7 +79,7 @@ def store_new_listing(listing):
     Only store a new listing if different from existing value
     """
     if listing and not listing == globals.latest_listing:
-        logger.info("New listing detected")
+        LOG_INFO("New listing detected")
         globals.latest_listing = listing
         globals.buy_ready.set()
 
@@ -102,11 +103,11 @@ def search_and_update():
                 if os.path.isfile("test_new_listing.json.used"):
                     os.remove("test_new_listing.json.used")
                 os.rename("test_new_listing.json", "test_new_listing.json.used")
-            logger.info(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
+            LOG_INFO(f"Checking for coin announcements every {str(sleep_time)} seconds (in a separate thread)")
         except Exception as e:
-            logger.info(e)
+            LOG_INFO(e)
     else:
-        logger.info("while loop in search_and_update() has stopped.")
+        LOG_INFO("while loop in search_and_update() has stopped.")
 
 
 def get_all_currencies(single=False):
@@ -116,12 +117,12 @@ def get_all_currencies(single=False):
     """
     global supported_currencies
     while not globals.stop_threads:
-        logger.info("Getting the list of supported currencies from gate io")
+        LOG_INFO("Getting the list of supported currencies from gate io")
         all_currencies = ast.literal_eval(str(spot_api.list_currencies()))
         currency_list = [currency["currency"] for currency in all_currencies]
         with open("currencies.json", "w") as f:
             json.dump(currency_list, f, indent=4)
-            logger.info(
+            LOG_INFO(
                 "List of gate io currencies saved to currencies.json. Waiting 5 " "minutes before refreshing list..."
             )
         supported_currencies = currency_list
@@ -133,14 +134,14 @@ def get_all_currencies(single=False):
                 if globals.stop_threads:
                     break
     else:
-        logger.info("while loop in get_all_currencies() has stopped.")
+        LOG_INFO("while loop in get_all_currencies() has stopped.")
 
 
 def load_old_coins():
     if os.path.isfile("old_coins.json"):
         with open("old_coins.json") as json_file:
             data = json.load(json_file)
-            logger.debug("Loaded old_coins from file")
+            LOG_DEBUG("Loaded old_coins from file")
             return data
     else:
         return []
@@ -149,4 +150,4 @@ def load_old_coins():
 def store_old_coins(old_coin_list):
     with open("old_coins.json", "w") as f:
         json.dump(old_coin_list, f, indent=2)
-        logger.debug("Wrote old_coins to file")
+        LOG_DEBUG("Wrote old_coins to file")
