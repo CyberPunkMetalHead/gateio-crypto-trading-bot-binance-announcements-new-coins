@@ -42,8 +42,8 @@ class TelegramHandler(logging.Handler):
             return
 
         requests.get(
-            f"""https://api.telegram.org/bot{bot_token}/sendMessage
-            ?chat_id={bot_chatID}
-            &parse_mode=Markdown
-            &text={record.message}"""
+            f"https://api.telegram.org/bot{bot_token}/sendMessage"
+            f"?chat_id={bot_chatID}"
+            "&parse_mode=Markdown"
+            f"&text={record.message}"
         )
