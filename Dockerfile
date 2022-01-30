@@ -16,9 +16,9 @@ COPY setup.py .
 COPY main.py .
 
 # Copy relevant files to run bot
-COPY config.yml .
-COPY old_coins.json .
-COPY auth/auth.yml ./auth/
+COPY config.example.yml config.yml
+COPY old_coins.example.json old_coins.json
+COPY auth/auth.example.yml ./auth/auth.yml
 
 # install necessary requirements
 RUN pip3 install -r requirements.txt
