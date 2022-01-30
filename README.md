@@ -8,38 +8,27 @@ As Gateio seems to list many of these coins before Binance does, this exchange i
 It comes with a live and test mode so naturally, use at your own risk.
 
 # HOW TO RUN IT
-## 1. Create venv (recommended to use python>=3.8, check with `python --version`)
-
-    python3 -m venv env
-
-## 2 Activate venv
+## Simply Run
 
     Linux:
-    source env/bin/activate
+    bash run.sh
 
     Windows:
-    env\Scripts\activate.bat
+    ./run.bat
 
-## 3. Install program requirements
-
-    python -m pip install -r requirements.txt
-
-This contains the requirements for the program itself. You may now run the script using python main.py. 
-No additional steps needed for simply running the tool, you may stop here.
-
-## 4. Install dev requirements
+## Install dev requirements
 
     python -m pip install -r dev_requirements.txt
 
 This is necessary make verifying of the code easier and formats the code automatically to match the coding style.
 
-## 5. Install pre-commit hooks
+## Install pre-commit hooks
 
     pre-commit install
 
 This installs the pre-commit git hooks for the project and makes it possible to run the pre-commit script automatically when committing.
 
-## 6. Run Tests and pre-commit scripts manually
+## Run Tests and pre-commit scripts manually
 ### pre-commit checks
 To manually run the pre-commit script:
 
