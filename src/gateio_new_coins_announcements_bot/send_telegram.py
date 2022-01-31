@@ -11,8 +11,8 @@ config = load_config("config.yml")
 with open("auth/auth.yml") as file:
     try:
         creds = yaml.load(file, Loader=yaml.FullLoader)
-        bot_token = (os.getenv("TELEGRAM_TOKEN") or creds["telegram_token"])
-        bot_chatID = (os.getenv("TELEGRAM_CHAT_ID") or str(creds["telegram_chat_id"]))
+        bot_token = os.getenv("TELEGRAM_TOKEN") or creds["telegram_token"]
+        bot_chatID = os.getenv("TELEGRAM_CHAT_ID") or str(creds["telegram_chat_id"])
         valid_auth = True
     except KeyError:
         valid_auth = False

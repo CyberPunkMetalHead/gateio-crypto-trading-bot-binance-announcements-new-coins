@@ -75,7 +75,7 @@ To run Black:
         black src
 
 ## Configuring via ENV parameters
-You can pass Telegram and GATE.IO configs with the following vars:
+You can pass Telegram and GATE.IO configs with the following vars (ENV vars have priority over the config files):
 - <b>TELEGRAM_TOKEN</b> - Telegram bot token
 - <b>TELEGRAM_CHAT_ID</b> - Chat ID for bot messaging
 - <b>GATEIO_API</b> - GATE.IO API key
