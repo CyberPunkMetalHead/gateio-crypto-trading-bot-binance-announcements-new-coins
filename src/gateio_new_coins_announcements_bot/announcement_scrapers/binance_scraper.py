@@ -4,6 +4,8 @@ import time
 import requests
 
 from gateio_new_coins_announcements_bot.logger import logger
+from gateio_new_coins_announcements_bot.rotating_proxy import get_proxy
+from gateio_new_coins_announcements_bot.rotating_proxy import is_ready as rotating_proxy_is_ready
 from gateio_new_coins_announcements_bot.util.random import random_int
 from gateio_new_coins_announcements_bot.util.random import random_str
 
@@ -18,7 +20,17 @@ class BinanceScraper:
         """
         logger.debug("Pulling announcement page")
         request_url = self.__request_url()
-        response = self.http_client.get(request_url)
+
+        if rotating_proxy_is_ready():
+            proxy = get_proxy()
+            logger.debug(f"Using proxy: {proxy}")
+            try:
+                response = self.http_client.get(request_url, proxies={"http": "socks5://" + proxy})
+
+            except Exception as e:
+                logger.error(e)
+        else:
+            response = self.http_client.get(request_url)
 
         # Raise an HTTPError if status is not 200
         response.raise_for_status()

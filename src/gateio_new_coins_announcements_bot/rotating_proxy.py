@@ -1,10 +1,11 @@
-from typing import Callable
-import requests
-import threading
-import time
 import itertools
 import socket
 import struct
+import threading
+import time
+from typing import Callable
+
+import requests
 
 import gateio_new_coins_announcements_bot.globals as globals
 from gateio_new_coins_announcements_bot.logger import logger
@@ -23,7 +24,7 @@ def init_proxy():
 
 def _fetch_proxies():
     logger.info("Fetching proxies...")
-    global _proxy_list
+    _proxy_list
     global _proxy
     threads: list[threading.Thread] = []
     try:
@@ -31,13 +32,14 @@ def _fetch_proxies():
             "https://www.proxyscan.io/api/proxy?last_check=180&limit=20&type=socks5&format=txt&ping=1000"
         ).text
     except requests.exceptions.RequestException as e:
-        logger.error(e)
+        logger.error(f"Can't fetch proxies. Reason: {e}")
+        return
 
     # Merging old proxies with new ones
-    _list = list(proxy_res[:-1].split("\n") | _proxy_list.keys())
+    _merged_proxies = list(proxy_res[:-1].split("\n") | _proxy_list.keys())
 
-    if len(_list) > 0:
-        for p in _list:
+    if len(_merged_proxies) > 0:
+        for p in _merged_proxies:
             t = threading.Thread(target=checker, args=[p])
             t.start()
             threads.append(t)
@@ -50,7 +52,10 @@ def _fetch_proxies():
 
 
 def get_proxy() -> str:
-    return next(_proxy)
+    try:
+        return next(_proxy)
+    except StopIteration as exc:
+        raise Exception("No proxies available") from exc
 
 
 def is_ready() -> bool:
@@ -70,8 +75,9 @@ def _every(delay: int, task: Callable):
         if not globals.stop_threads:
             try:
                 task()
-            except Exception:
+            except Exception as e:
                 logger.error("Problem while fetching proxies")
+                logger.debug(e)
         # skip tasks if we are behind schedule:
         next_time += (time.time() - next_time) // delay * delay + delay
     logger.info("Proxies fetching thread has stopped.")
@@ -82,24 +88,21 @@ def checker(proxy: str):
     ip, port = proxy.split(":")
     sen = struct.pack("BBB", 0x05, 0x01, 0x00)
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(5)
-    try:
-        s.connect((ip, int(port)))
-        s.sendall(sen)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(5)
+        try:
+            s.connect((ip, int(port)))
+            s.sendall(sen)
 
-        data = s.recv(2)
-        version, auth = struct.unpack("BB", data)
+            data = s.recv(2)
+            version, auth = struct.unpack("BB", data)
+            # Check if the proxy is socks5 and it doesn't require authentication
+            if version == 5 and auth == 0:
+                _proxy_list[proxy] = proxy
+            else:
+                _proxy_list.pop(proxy, None)
 
-        if version == 5 and auth == 0:
-            _proxy_list[proxy] = proxy
-        else:
+        except Exception as e:
+            logger.info(f"Proxy {proxy} invalid. Reason: {e}")
             _proxy_list.pop(proxy, None)
-        s.close()
-        return
-
-    except Exception as e:
-        logger.info(f"Proxy {proxy} invalid. Reason: {e}")
-        _proxy_list.pop(proxy, None)
-        s.close()
-        return
+            return
