@@ -23,7 +23,6 @@ def init_proxy():
 
 
 def _fetch_proxies():
-    logger.info("Fetching proxies...")
     _proxy_list
     global _proxy
     threads: list[threading.Thread] = []
@@ -32,7 +31,7 @@ def _fetch_proxies():
             "https://www.proxyscan.io/api/proxy?last_check=180&limit=20&type=socks5&format=txt&ping=1000"
         ).text
     except requests.exceptions.RequestException as e:
-        logger.error(f"Can't fetch proxies. Reason: {e}")
+        logger.debug(f"Can't fetch proxies. Reason: {e}")
         return
 
     # Merging old proxies with new ones
@@ -48,7 +47,7 @@ def _fetch_proxies():
             t.join()
 
     logger.info(f"Fetched {len(_proxy_list)} proxies")
-    _proxy = itertools.cycle(_proxy_list.keys())
+    _proxy = itertools.cycle(_proxy_list.copy().keys())
 
 
 def get_proxy() -> str:
