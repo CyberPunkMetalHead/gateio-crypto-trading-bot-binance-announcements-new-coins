@@ -23,7 +23,7 @@ def init_proxy():
 
 
 def _fetch_proxies():
-    _proxy_list
+    logger.info("Fetching proxies...")
     global _proxy
     threads: list[threading.Thread] = []
     try:
