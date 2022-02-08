@@ -17,6 +17,8 @@
     TSL: -4
     # Trailing Take Profit
     TTP: 2
+    # Enable rotating proxy functionality
+    ROTATING_PROXY: False
   LOGGING:
     # Logging levels used in this program are ERROR, INFO, and DEBUG
     LOG_LEVEL: INFO
